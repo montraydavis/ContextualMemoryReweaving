@@ -1,4 +1,4 @@
-# Contextual Memory Reweaving (CMR) Project Wiki
+# Contextual Memory Reweaving (CMR) Project Initiative
 
 **[Experimental]** *This project represents cutting-edge research in artificial intelligence memory systems and is currently in active development.*
 
