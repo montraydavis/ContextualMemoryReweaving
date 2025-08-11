@@ -4,15 +4,77 @@ The optimization module provides comprehensive performance optimization capabili
 
 ## Overview
 
+```mermaid
+graph TD
+    A[Input] --> B[Performance Monitor]
+    B --> C[Optimization Manager]
+    C --> D[Optimization Strategies]
+    D --> E[Apply Optimizations]
+    E --> F[Optimized Output]
+    
+    subgraph "Optimization Strategies"
+        D1[Adaptive Thresholds]
+        D2[Batch Processing]
+        D3[Memory Prefetching]
+        D4[Computation Scheduling]
+    end
+    
+    D --> D1 & D2 & D3 & D4
+    
+    subgraph "Monitoring & Feedback"
+        B
+        G[Performance Metrics]
+        H[Adaptation Loop]
+    end
+    
+    E -->|Metrics| G
+    G -->|Feedback| H
+    H -->|Adjust| C
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style F fill:#9f9,stroke:#333,stroke-width:2px
+```
+
 The optimization module is designed to enhance CMR system performance through intelligent optimization strategies. It includes adaptive threshold management, batch processing optimization, memory prefetching, computation scheduling, and background optimization tasks.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Optimization Workflow](#optimization-workflow)
+- [Key Optimization Areas](#key-optimization-areas)
+- [Key Components](#key-components)
+- [Optimization Strategies](#optimization-strategies)
+- [Configuration](#configuration)
+- [Performance Metrics](#performance-metrics)
+- [Integration with CMR System](#integration-with-cmr-system)
+- [Best Practices](#best-practices)
+- [Troubleshooting](#troubleshooting)
+- [Advanced Features](#advanced-features)
+
+## Optimization Workflow
+
+1. **Performance Monitoring**: Continuously collects performance metrics
+2. **Strategy Selection**: Chooses appropriate optimization strategies
+3. **Optimization Application**: Applies selected optimizations
+4. **Feedback Loop**: Measures impact and adjusts strategies
+
+## Key Optimization Areas
+
+- **Adaptive Thresholds**: Dynamic adjustment of system parameters
+- **Batch Processing**: Efficient handling of multiple inputs
+- **Memory Management**: Optimized memory access and prefetching
+- **Computation Scheduling**: Intelligent task prioritization
 
 ## Key Components
 
 ### CMR Performance Optimizer (`performance_optimization.py`)
 
+[View Class Documentation](./performance_optimization.md)
+
 The `CMRPerformanceOptimizer` class provides the main optimization coordination:
 
 **Core Optimization Components:**
+
 - **AdaptiveThresholdManager**: Dynamic threshold adjustment
 - **BatchProcessingOptimizer**: Batch size and padding optimization
 - **MemoryPrefetcher**: Predictive memory loading
@@ -20,6 +82,7 @@ The `CMRPerformanceOptimizer` class provides the main optimization coordination:
 - **BackgroundOptimizer**: Asynchronous optimization tasks
 
 **Key Features:**
+
 - Real-time performance optimization
 - Adaptive parameter tuning
 - Resource utilization optimization
@@ -27,6 +90,7 @@ The `CMRPerformanceOptimizer` class provides the main optimization coordination:
 - Performance impact tracking
 
 **Usage Example:**
+
 ```python
 from models.performance_optimization import CMRPerformanceOptimizer
 
@@ -34,7 +98,7 @@ from models.performance_optimization import CMRPerformanceOptimizer
 optimizer = CMRPerformanceOptimizer(cmr_model, optimization_config)
 
 # Optimize forward pass
-optimized_outputs = optimizer.optimize_forward_pass(input_ids, attention_mask)
+opt_inputs, opt_mask, opt_info = optimizer.optimize_forward_pass(input_ids, attention_mask)
 
 # Get optimization statistics
 stats = optimizer.get_optimization_stats()
@@ -42,52 +106,68 @@ stats = optimizer.get_optimization_stats()
 
 ### Adaptive Threshold Manager
 
+[View Class Documentation](./adaptive_threshold_manager.md)
+
 The `AdaptiveThresholdManager` dynamically adjusts system thresholds based on performance:
 
 **Adaptive Features:**
+
 - **Relevance Threshold Adjustment**: Dynamic relevance score thresholds
 - **Memory Pressure Response**: Threshold adjustment based on memory usage
 - **Performance-based Tuning**: Threshold optimization for performance
 - **Quality Maintenance**: Balance between performance and quality
 
 **Threshold Types:**
+
 - Relevance score thresholds for memory storage
 - Retrieval similarity thresholds
 - Eviction priority thresholds
 - Reconstruction quality thresholds
 
 **Usage Example:**
-```python
-# Initialize adaptive threshold manager
-threshold_manager = AdaptiveThresholdManager()
 
-# Update thresholds based on performance
-new_thresholds = threshold_manager.update_thresholds(
-    current_performance=performance_metrics,
-    memory_pressure=memory_usage,
-    quality_metrics=quality_scores
+```python
+from models.performance_optimization import AdaptiveThresholdManager
+
+threshold_manager = AdaptiveThresholdManager(base_threshold=0.5)
+
+# Suggest an optimal threshold given input shape and memory usage
+suggested = threshold_manager.get_optimal_threshold(
+    input_shape=(batch_size, seq_len),
+    memory_usage={'total_entries': current_total_entries}
 )
+
+if suggested is not None:
+    # Apply to your model's relevance scorer if present
+    cmr_model.relevance_scorer.relevance_threshold = suggested
+    threshold_manager.update_threshold(layer_idx=0, threshold=suggested, performance=1.0)
 ```
 
 ### Batch Processing Optimizer
 
+[View Class Documentation](./batch_processing_optimizer.md)
+
 The `BatchProcessingOptimizer` optimizes batch processing for better efficiency:
 
 **Optimization Strategies:**
+
 - **Dynamic Batch Sizing**: Optimal batch size selection
 - **Padding Reduction**: Minimize unnecessary padding
 - **Sequence Length Optimization**: Efficient sequence handling
 - **Memory-aware Batching**: Batch size based on available memory
 
 **Key Features:**
+
 - Automatic batch size adjustment
 - Padding waste reduction
 - Memory usage optimization
 - Throughput maximization
 
 **Usage Example:**
+
 ```python
-# Initialize batch optimizer
+from models.performance_optimization import BatchProcessingOptimizer
+
 batch_optimizer = BatchProcessingOptimizer()
 
 # Optimize batch
@@ -98,89 +178,92 @@ optimized_batch, optimized_mask = batch_optimizer.optimize_batch(
 
 ### Memory Prefetcher
 
+[View Class Documentation](./memory_prefetcher.md)
+
 The `MemoryPrefetcher` implements predictive memory loading:
 
 **Prefetching Strategies:**
+
 - **Pattern-based Prefetching**: Based on access patterns
 - **Similarity-based Prefetching**: Prefetch similar memories
 - **Temporal Prefetching**: Based on temporal patterns
 - **Context-aware Prefetching**: Context-driven prefetching
 
 **Key Features:**
+
 - Predictive memory loading
 - Cache hit rate optimization
 - Access pattern learning
 - Adaptive prefetching strategies
 
 **Usage Example:**
-```python
-# Initialize memory prefetcher
-prefetcher = MemoryPrefetcher(memory_buffer)
 
-# Prefetch memories for input
+```python
+from models.performance_optimization import MemoryPrefetcher
+
+prefetcher = MemoryPrefetcher(memory_buffer)
 prefetch_info = prefetcher.prefetch_for_input(input_ids)
 ```
 
 ### Computation Scheduler
 
+[View Class Documentation](./computation_scheduler.md)
+
 The `ComputationScheduler` optimizes computation task scheduling:
 
 **Scheduling Features:**
+
 - **Priority-based Scheduling**: Task prioritization
 - **Resource-aware Scheduling**: Consider available resources
 - **Dependency Management**: Handle task dependencies
 - **Load Balancing**: Distribute computational load
 
 **Task Types:**
+
 - Memory capture tasks
 - Reconstruction tasks
 - Retrieval operations
 - Background optimization tasks
 
 **Usage Example:**
-```python
-# Initialize computation scheduler
-scheduler = ComputationScheduler()
 
-# Schedule computation task
-task_id = scheduler.schedule_task(
-    task_type='reconstruction',
-    priority='high',
-    dependencies=[],
-    estimated_time=0.005
-)
+```python
+from models.performance_optimization import ComputationScheduler
+
+scheduler = ComputationScheduler()
+task_id = scheduler.schedule_task(task_type='reconstruction', priority='high')
 ```
 
 ### Background Optimizer
 
+[View Class Documentation](./background_optimizer.md)
+
 The `BackgroundOptimizer` performs asynchronous optimization tasks:
 
 **Background Tasks:**
+
 - **Memory Buffer Cleanup**: Periodic buffer maintenance
 - **Cache Optimization**: Cache efficiency improvements
 - **Threshold Tuning**: Continuous threshold optimization
 - **Performance Analysis**: Background performance analysis
 
 **Key Features:**
+
 - Asynchronous task execution
 - Non-blocking optimization
 - Continuous improvement
 - Resource-aware processing
 
 **Usage Example:**
-```python
-# Initialize background optimizer
-background_optimizer = BackgroundOptimizer(cmr_model)
 
-# Start background optimization
+```python
+from models.performance_optimization import BackgroundOptimizer
+
+background_optimizer = BackgroundOptimizer(cmr_model, interval_seconds=30.0)
 background_optimizer.start()
 
-# Configure optimization tasks
-background_optimizer.configure_tasks({
-    'memory_cleanup': {'interval': 60.0, 'enabled': True},
-    'cache_optimization': {'interval': 300.0, 'enabled': True},
-    'threshold_tuning': {'interval': 120.0, 'enabled': True}
-})
+# ... later
+background_optimizer.stop()
 ```
 
 ## Optimization Strategies
@@ -188,12 +271,14 @@ background_optimizer.configure_tasks({
 ### Adaptive Optimization
 
 **Dynamic Parameter Adjustment:**
+
 - Real-time threshold adjustment based on performance
 - Adaptive batch sizing based on system load
 - Dynamic memory allocation based on usage patterns
 - Automatic quality-performance trade-off optimization
 
 **Performance-driven Optimization:**
+
 - Latency-focused optimization for real-time applications
 - Throughput-focused optimization for batch processing
 - Memory-focused optimization for resource-constrained environments
@@ -202,12 +287,14 @@ background_optimizer.configure_tasks({
 ### Resource Optimization
 
 **Memory Optimization:**
+
 - Efficient memory allocation and deallocation
 - Memory pool management
 - Garbage collection optimization
 - Memory fragmentation reduction
 
 **Compute Optimization:**
+
 - CPU/GPU utilization optimization
 - Parallel processing coordination
 - Task scheduling optimization
@@ -264,6 +351,7 @@ prefetching_config = {
 ### Optimization Metrics
 
 **Efficiency Metrics:**
+
 ```python
 optimization_metrics = {
     'threshold_adjustments': 25,                  # Number of threshold adjustments
@@ -276,6 +364,7 @@ optimization_metrics = {
 ```
 
 **Resource Utilization:**
+
 ```python
 resource_metrics = {
     'cpu_utilization': 0.75,                      # CPU utilization rate
@@ -293,6 +382,7 @@ resource_metrics = {
 The optimization module automatically integrates with:
 
 **CMR Components:**
+
 - **Memory Buffer**: Buffer optimization and cleanup
 - **Retrieval System**: Retrieval strategy optimization
 - **Reconstruction System**: Reconstruction efficiency optimization
@@ -301,6 +391,7 @@ The optimization module automatically integrates with:
 ### Optimization Hooks
 
 **Hook Types:**
+
 - Pre-processing optimization hooks
 - Runtime optimization hooks
 - Post-processing optimization hooks
@@ -350,6 +441,7 @@ The optimization module automatically integrates with:
 ### Machine Learning-based Optimization
 
 **ML-driven Features:**
+
 - Predictive threshold adjustment
 - Learned prefetching patterns
 - Adaptive batch sizing
@@ -358,6 +450,7 @@ The optimization module automatically integrates with:
 ### Multi-objective Optimization
 
 **Optimization Objectives:**
+
 - Minimize latency while maintaining quality
 - Maximize throughput within memory constraints
 - Balance accuracy and efficiency
@@ -366,6 +459,7 @@ The optimization module automatically integrates with:
 ### Custom Optimization Strategies
 
 **Extensibility Features:**
+
 - Custom optimization strategy plugins
 - User-defined optimization objectives
 - Configurable optimization pipelines

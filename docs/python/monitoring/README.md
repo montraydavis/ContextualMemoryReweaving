@@ -4,17 +4,137 @@ The monitoring module provides comprehensive performance monitoring and metrics 
 
 ## Overview
 
+```mermaid
+graph TD
+    %% Main Monitoring Flow
+    A[CMR Components] -->|Emit| B[Metric Collectors]
+    B -->|Store| C[Time Series DB]
+    C -->|Process| D[Aggregators]
+    D -->|Visualize| E[Dashboards]
+    D -->|Trigger| F[Alerting]
+    
+    %% Error Handling
+    A -->|Error| G[Error Handler]
+    B -->|Invalid Data| G
+    C -->|Storage Error| G
+    D -->|Processing Error| G
+    G -->|Log| H[Error Logs]
+    G -->|Notify| I[Alert Manager]
+    
+    %% Data Validation
+    subgraph "Validation Steps"
+        VA[Metric Validation] -->|Check Schema| VB[Range Check]
+        VB -->|Valid| VC[Sanitization]
+    end
+    
+    B --> VA
+    VC -->|Valid| C
+    
+    %% Performance Metrics
+    subgraph "Performance Metrics"
+        M1[Collection Rate]
+        M2[Storage Latency]
+        M3[Processing Time]
+        M4[Alert Rate]
+        M5[System Health]
+    end
+    
+    B -->|Rate| M1
+    C -->|Latency| M2
+    D -->|Time| M3
+    F -->|Alerts| M4
+    E -->|Health| M5
+    
+    %% Component Interactions
+    subgraph "Monitoring Pipeline"
+        B <-->|Batch| C
+        C <-->|Query| D
+        D <-->|Anomaly Detection| F
+    end
+    
+    %% Current Implementation
+    subgraph "Current Implementation"
+        N[performance_stats]
+        O[Counters]
+        P[Timers]
+        Q[Layer Metrics]
+    end
+    
+    A -->|Current| N
+    
+    %% Planned Components
+    subgraph "Planned Components"
+        R[CMRPerformanceMonitor] -.-> B
+        S[Health Dashboards] -.-> E
+        T[Alert Manager] -.-> F
+        U[Anomaly Detection] -.-> F
+    end
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style E fill:#9f9,stroke:#333,stroke-width:2px
+    style F fill:#f99,stroke:#333,stroke-width:2px
+    style H fill:#f99,stroke:#333,stroke-width:2px
+    
+    %% Legend
+    subgraph " "
+        direction TB
+        L1[Process]:::process
+        L2[Validation]:::validation
+        L3[Metrics]:::metrics
+        L4[Error]:::error
+        L5[Current]:::current
+        L6[Planned]:::planned
+    end
+    
+    classDef process fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    classDef validation fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef metrics fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef error fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+    classDef current fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef planned fill:#fff8e1,stroke:#ffa000,stroke-width:2px,stroke-dasharray: 5 5
+```
+
 The monitoring module is designed to provide visibility into the CMR system's performance, health, and behavior. It includes performance tracking, metrics collection, health monitoring, and diagnostic tools to ensure optimal system operation.
 
-Note: Currently implemented monitoring is provided by `CMRPerformanceMonitor` within `models/cmr_full_integrated.py`, exposing `record_capture`, `record_reconstruction`, `get_stats`, and `reset`. Other features described below (real-time monitoring, health dashboards, alerting) are planned and not yet implemented.
+## Table of Contents
+
+- [Overview](#overview)
+- [Key Components](#key-components)
+- [Metrics Collection](#metrics-collection)
+- [Real-time Monitoring (Planned)](#real-time-monitoring-planned)
+- [Diagnostic Tools](#diagnostic-tools)
+- [Configuration](#configuration)
+- [Integration with CMR System](#integration-with-cmr-system)
+- [Best Practices](#best-practices)
+- [Troubleshooting](#troubleshooting)
+- [Output Formats](#output-formats)
+
+### Current Implementation
+
+- **Basic Metrics**: Tracked via `performance_stats` dictionary
+- **Counters**: Operation counts and totals
+- **Averages**: Basic timing statistics
+- **Per-layer Stats**: Layer-specific performance metrics
+
+### Planned Enhancements
+
+- **Dedicated Monitor**: `CMRPerformanceMonitor` class
+- **Real-time Dashboards**: Visual monitoring interface
+- **Advanced Alerting**: Threshold-based notifications
+- **Historical Analysis**: Long-term trend tracking
+
+Note: Monitoring is currently provided via `FullCMRModel.performance_stats` (a dict) and related helper methods. A dedicated `CMRPerformanceMonitor` class is planned but not yet implemented. Other features described below (real-time monitoring, health dashboards, alerting) are also planned.
 
 ## Key Components
 
-### CMR Performance Monitor (`cmr_full_integrated.py`)
+### CMR Performance Monitoring (Current and Planned)
 
-The `CMRPerformanceMonitor` class provides comprehensive performance tracking:
+[View Class Documentation](./cmr_performance_monitor.md)
+
+Current: `FullCMRModel.performance_stats` provides basic counters and averages (e.g., total_captures, total_reconstructions, avg_* times). Planned: a `CMRPerformanceMonitor` class.
 
 **Tracked Metrics:**
+
 - **Capture Metrics**: Memory capture timing and counts
 - **Reconstruction Metrics**: State reconstruction performance
 - **Layer-wise Statistics**: Per-layer performance breakdown
@@ -22,34 +142,31 @@ The `CMRPerformanceMonitor` class provides comprehensive performance tracking:
 - **Timing Analysis**: Detailed timing breakdowns
 
 **Key Features:**
+
 - Real-time metric collection
 - Historical performance tracking
 - Statistical analysis and aggregation
 - Performance trend identification
 - Bottleneck detection
 
-**Usage Example:**
+**Usage Example (current):**
+
 ```python
-from models.cmr_full_integrated import CMRPerformanceMonitor
+from models.cmr_full_integrated import FullCMRModel
 
-# Initialize monitor
-monitor = CMRPerformanceMonitor()
-
-# Record capture event
-monitor.record_capture(layer_idx=4, states_stored=10, capture_time=0.002)
-
-# Record reconstruction event
-monitor.record_reconstruction(layer_idx=4, memories_used=5, reconstruction_time=0.001)
-
-# Get performance statistics
-stats = monitor.get_stats()
+# After running a forward pass with return_memory_info=True
+outputs = model.forward(input_ids, return_memory_info=True)
+perf_stats = outputs.get('performance_stats', {})
 ```
 
 ### Health Monitoring (Planned)
 
+[View Planned Implementation Details](./health_monitor.md)
+
 The monitoring system provides comprehensive health monitoring capabilities:
 
 **Health Metrics:**
+
 - **System Health Score**: Overall system health assessment
 - **Component Status**: Individual component health status
 - **Resource Utilization**: CPU, GPU, and memory usage
@@ -57,13 +174,17 @@ The monitoring system provides comprehensive health monitoring capabilities:
 - **Performance Degradation**: Performance trend analysis
 
 **Health Indicators:**
+
 - **Green**: System operating optimally
 - **Yellow**: Minor performance issues detected
 - **Red**: Critical issues requiring attention
 
 ### Diagnostic Capabilities (Planned)
 
+[View Planned Implementation Details](./diagnostics.md)
+
 **Diagnostic Features:**
+
 - **Component Health Analysis**: Individual component diagnostics
 - **Hook System Analysis**: Hook performance and conflicts
 - **Memory Buffer Analysis**: Buffer efficiency and patterns
@@ -72,9 +193,12 @@ The monitoring system provides comprehensive health monitoring capabilities:
 
 ## Metrics Collection
 
+[View Metrics Documentation](./metrics.md)
+
 ### Performance Metrics
 
 **Timing Metrics:**
+
 ```python
 metrics = {
     'capture_times': [0.001, 0.002, 0.001],      # Memory capture times
@@ -86,6 +210,7 @@ metrics = {
 ```
 
 **Count Metrics:**
+
 ```python
 metrics = {
     'total_captures': 150,                        # Total memory captures
@@ -97,6 +222,7 @@ metrics = {
 ```
 
 **Efficiency Metrics:**
+
 ```python
 metrics = {
     'capture_efficiency': 0.95,                   # Capture success rate
@@ -110,6 +236,7 @@ metrics = {
 ### Memory Metrics
 
 **Buffer Statistics:**
+
 ```python
 buffer_stats = {
     'total_entries': 1500,                        # Total stored entries
@@ -122,6 +249,7 @@ buffer_stats = {
 ```
 
 **Retrieval Statistics:**
+
 ```python
 retrieval_stats = {
     'total_retrievals': 200,                      # Total retrieval operations
@@ -139,6 +267,7 @@ retrieval_stats = {
 The monitoring system provides real-time performance tracking:
 
 **Real-time Features:**
+
 - Live metric updates during model execution
 - Performance trend visualization
 - Anomaly detection and alerting
@@ -146,6 +275,7 @@ The monitoring system provides real-time performance tracking:
 - Bottleneck identification
 
 **Usage Example:**
+
 ```python
 # Enable real-time monitoring
 monitor.enable_real_time_monitoring()
@@ -161,6 +291,7 @@ live_stats = monitor.get_live_stats()
 ### Health Monitoring Dashboard (Planned)
 
 **Dashboard Features:**
+
 - System health overview
 - Component status indicators
 - Performance trend charts
@@ -172,6 +303,7 @@ live_stats = monitor.get_live_stats()
 ### Component Diagnostics
 
 **Diagnostic Capabilities:**
+
 - Memory buffer health assessment
 - Hook system performance analysis
 - Retrieval system efficiency evaluation
@@ -179,6 +311,7 @@ live_stats = monitor.get_live_stats()
 - Optimization impact assessment
 
 **Usage Example:**
+
 ```python
 # Run comprehensive diagnostics
 diagnostics = monitor.run_diagnostics()
@@ -192,6 +325,7 @@ memory_analysis = diagnostics['memory_analysis']
 ### Performance Profiling
 
 **Profiling Features:**
+
 - Detailed timing breakdowns
 - Memory allocation tracking
 - GPU utilization analysis
@@ -199,6 +333,7 @@ memory_analysis = diagnostics['memory_analysis']
 - Performance regression detection
 
 **Usage Example:**
+
 ```python
 # Enable profiling
 monitor.enable_profiling()
@@ -253,6 +388,7 @@ alert_config = {
 The monitoring system automatically integrates with:
 
 **CMR Components:**
+
 - **FullCMRModel**: Comprehensive model monitoring
 - **Memory Buffer**: Buffer performance tracking
 - **Retrieval System**: Retrieval efficiency monitoring
@@ -262,6 +398,7 @@ The monitoring system automatically integrates with:
 ### Hook-based Monitoring
 
 **Monitoring Hooks:**
+
 - Pre-processing hooks for input analysis
 - Layer-wise hooks for intermediate monitoring
 - Post-processing hooks for output analysis
@@ -313,6 +450,7 @@ The monitoring system automatically integrates with:
 The monitoring system generates various report formats:
 
 **JSON Reports:**
+
 ```json
 {
   "timestamp": "2024-01-15T10:30:00Z",
@@ -331,6 +469,7 @@ The monitoring system generates various report formats:
 ```
 
 **CSV Exports:**
+
 - Time-series performance data
 - Component health history
 - Error logs and patterns
@@ -339,6 +478,7 @@ The monitoring system generates various report formats:
 ### Visualization Support
 
 The monitoring system supports various visualization formats:
+
 - Performance trend charts
 - Health status dashboards
 - Resource utilization graphs

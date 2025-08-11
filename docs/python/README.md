@@ -6,20 +6,89 @@ Welcome to the documentation for the Contextual Memory Reweaving (CMR) Python im
 
 The CMR system is a sophisticated memory-enhanced language model architecture that enables contextual memory reweaving for improved performance on long-context tasks. The system integrates advanced memory management, retrieval strategies, and optimization techniques with transformer-based language models.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Quick Start](#quick-start)
+- [Architecture Overview](#architecture-overview)
+- [Module Documentation](#module-documentation)
+- [Getting Started](#getting-started)
+- [Configuration Guide](#configuration-guide)
+- [Performance Considerations](#performance-considerations)
+- [Best Practices](#best-practices)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [Version Information](#version-information)
+- [License](#license)
+
+## Key Features
+
+- **Persistent Memory**: Long-term storage and retrieval of contextual information
+- **Adaptive Retrieval**: Intelligent memory recall based on relevance and context
+- **Layered Architecture**: Modular design for flexible integration with existing models
+- **Performance Optimization**: Efficient memory management and computation
+- **Model Agnostic**: Works with various transformer architectures
+- **Extensible Design**: Easy to extend with custom components and strategies
+
+## Quick Start
+
+```python
+from models import CMRTransformer, MemoryEntry
+from models.backbones import ModelRegistry
+
+# Initialize with a base model
+model = ModelRegistry.create("mistralai/Ministral-8B-Instruct-2410")
+
+# Initialize CMR with the base model
+cmr = CMRTransformer(model)
+
+# Enable memory capture
+cmr.enable_memory()
+
+# Process input with memory
+output = cmr.generate("Your input here")
+```
+
 ## Architecture Overview
 
-The CMR system consists of several interconnected modules:
+```mermaid
+classDiagram
+    class CMRSystem {
+        +LayeredMemoryBuffer memory_buffer
+        +RelevanceScorer scorer
+        +AdvancedMemoryRetriever retriever
+        +LayeredStateReconstructor reconstructor
+        +enable_memory()
+        +disable_memory()
+        +forward()
+    }
+    
+    class LayeredMemoryBuffer {
+        +add_entry()
+        +retrieve_recent()
+        +retrieve_relevant()
+    }
+    
+    CMRSystem --> LayeredMemoryBuffer
+    CMRSystem --> RelevanceScorer
+    CMRSystem --> AdvancedMemoryRetriever
+    CMRSystem --> LayeredStateReconstructor
+    
+    MistralAdapter --|> BackboneAdapter
+    GemmaAdapter --|> BackboneAdapter
+```
 
-```
-CMR System Architecture
-├── Models Module (Core Neural Networks)
-├── Integration Module (System Orchestration)
-├── Experiments Module (Testing & Analysis)
-├── Monitoring Module (Performance Tracking)
-├── Optimization Module (Performance Enhancement)
-├── Services Module (Advanced Services)
-└── Utils Module (Infrastructure Utilities)
-```
+### Core Modules
+
+| Module           | Description                              | Status             |
+| ---------------- | ---------------------------------------- | ------------------ |
+| **Models**       | Core neural networks and data structures | ✅ Active          |
+| **Integration**  | System orchestration and coordination    | ✅ Active          |
+| **Services**     | Advanced retrieval and processing        | 🔄 In Development |
+| **Monitoring**   | Performance tracking and metrics         | ✅ Active          |
+| **Optimization** | Performance enhancement                  | 🔄 In Development |
+| **Utils**        | Infrastructure and helpers               | ✅ Active          |
 
 ## Module Documentation
 
@@ -28,14 +97,16 @@ CMR System Architecture
 The models module contains the core neural network models and data structures:
 
 **Key Components:**
+
 - **Base Transformer**: Enhanced transformer with memory capabilities
 - **Memory Entry**: Core data structure for stored memories
 - **Relevance Scorer**: Determines importance of hidden states
-- **Advanced Retrieval**: Sophisticated memory retrieval strategies
-- **Performance Optimization**: Comprehensive performance optimization
-- **Integrated Models**: Complete CMR implementations
+- **Advanced Retrieval**: Minimal top‑k retrieval today; advanced strategies planned
+- **Performance Optimization**: Placeholder (stub); features planned
+- **Integrated Models**: FullCMRModel is available; Integrated CMR Model planned
 
 **Primary Use Cases:**
+
 - Building memory-enhanced language models
 - Implementing custom retrieval strategies
 - Optimizing model performance
@@ -46,13 +117,15 @@ The models module contains the core neural network models and data structures:
 The integration module provides system orchestration and coordination:
 
 **Key Components:**
-- **Integrated CMR Model**: Foundational CMR integration
+
+- **Integrated CMR Model** (Planned): Foundational CMR integration
 - **Full CMR Model**: Complete CMR implementation
 - **Mistral Integration**: Specialized Mistral model integration
 - **Hook System**: Comprehensive hook management
 - **Component Coordination**: Seamless component integration
 
 **Primary Use Cases:**
+
 - Deploying complete CMR systems
 - Integrating CMR with existing models
 - Coordinating multiple CMR components
@@ -63,6 +136,7 @@ The integration module provides system orchestration and coordination:
 The experiments module provides comprehensive testing and analysis frameworks:
 
 **Key Components:**
+
 - **Dataset Testing**: Multi-dataset evaluation framework
 - **Performance Analysis**: Detailed performance analysis tools
 - **Benchmarking**: Comprehensive benchmarking capabilities
@@ -70,6 +144,7 @@ The experiments module provides comprehensive testing and analysis frameworks:
 - **Comparative Analysis**: Cross-configuration comparisons
 
 **Primary Use Cases:**
+
 - Evaluating CMR performance
 - Benchmarking different configurations
 - Analyzing system behavior
@@ -80,6 +155,7 @@ The experiments module provides comprehensive testing and analysis frameworks:
 The monitoring module provides performance monitoring and metrics collection:
 
 **Key Components:**
+
 - **Performance Monitor**: Real-time performance tracking
 - **Health Monitoring**: System health assessment
 - **Metrics Collection**: Comprehensive metrics gathering
@@ -87,6 +163,7 @@ The monitoring module provides performance monitoring and metrics collection:
 - **Alert System**: Performance alert mechanisms
 
 **Primary Use Cases:**
+
 - Monitoring system performance
 - Tracking system health
 - Collecting performance metrics
@@ -97,6 +174,7 @@ The monitoring module provides performance monitoring and metrics collection:
 The optimization module provides performance enhancement capabilities:
 
 **Key Components:**
+
 - **Adaptive Thresholds**: Dynamic threshold management
 - **Batch Optimization**: Batch processing optimization
 - **Memory Prefetching**: Predictive memory loading
@@ -104,6 +182,7 @@ The optimization module provides performance enhancement capabilities:
 - **Background Optimization**: Asynchronous optimization tasks
 
 **Primary Use Cases:**
+
 - Optimizing system performance
 - Reducing computational overhead
 - Improving memory efficiency
@@ -114,6 +193,7 @@ The optimization module provides performance enhancement capabilities:
 The services module provides advanced retrieval and processing services:
 
 **Key Components:**
+
 - **Semantic Matching**: Content-based similarity services
 - **Contextual Scoring**: Context-aware relevance assessment
 - **Multi-criteria Ranking**: Sophisticated ranking systems
@@ -121,6 +201,7 @@ The services module provides advanced retrieval and processing services:
 - **Retrieval Caching**: Efficient caching services
 
 **Primary Use Cases:**
+
 - Implementing advanced retrieval strategies
 - Building semantic matching systems
 - Creating sophisticated ranking mechanisms
@@ -131,6 +212,7 @@ The services module provides advanced retrieval and processing services:
 The utils module provides infrastructure utilities and helper functions:
 
 **Key Components:**
+
 - **Hook Manager**: Comprehensive hook management
 - **Memory Hierarchy**: Memory organization utilities
 - **Retrieval Cache**: Caching utilities
@@ -138,6 +220,7 @@ The utils module provides infrastructure utilities and helper functions:
 - **Configuration Management**: Configuration utilities
 
 **Primary Use Cases:**
+
 - Managing transformer hooks
 - Organizing memory structures
 - Implementing caching systems
@@ -159,8 +242,10 @@ The utils module provides infrastructure utilities and helper functions:
 from models.cmr_full_integrated import FullCMRModel
 from transformers import AutoConfig, AutoTokenizer
 
-# Create model configuration (use GPT-2 for a no-auth quickstart)
-base_config = AutoConfig.from_pretrained("openai-community/gpt2")
+# Create model configuration
+# Note: Using remote configs (e.g., mistralai/...) requires network/HF access.
+# For fully offline tests, pass a locally constructed config.
+base_config = AutoConfig.from_pretrained("mistralai/Ministral-8B-Instruct-2410")
 
 # Configure CMR settings
 cmr_config = {
@@ -174,7 +259,7 @@ cmr_config = {
 model = FullCMRModel(base_config, cmr_config)
 
 # Create tokenizer and process input with memory
-tokenizer = AutoTokenizer.from_pretrained("gpt2")
+tokenizer = AutoTokenizer.from_pretrained("mistralai/Ministral-8B-Instruct-2410")
 input_ids = tokenizer.encode("Your input text here", return_tensors="pt")
 outputs = model.forward(input_ids, return_memory_info=True)
 
@@ -183,7 +268,7 @@ generated_states = outputs['last_hidden_state']
 memory_stats = {k: outputs[k] for k in ("memory_stats", "performance_stats", "retrieval_stats") if k in outputs}
 ```
 
-Note: The integrated model will fall back to public GPT-2 if Mistral models are not accessible. The `FullCMRModel` also projects `last_hidden_state` to a 256-dimensional hidden size by default for consistency in tests.
+Note: The quickstart example uses Hugging Face model names and will require access. There is no automatic fallback to GPT‑2 in tokenization. `FullCMRModel` projects `last_hidden_state` to a 256‑dimensional hidden size by default for consistency in tests.
 
 ## Configuration Guide
 
@@ -227,7 +312,7 @@ optimization_config = {
 
 ### Advanced Configuration
 
-For advanced configuration options, refer to the individual module documentation. Note that `IntegratedCMRModel` defaults to `hybrid` relevance scoring, while `FullCMRModel` defaults to `attention_based`.
+For advanced configuration options, refer to the individual module documentation. Note that `IntegratedCMRModel` is planned and not available; `FullCMRModel` defaults to `attention_based` relevance scoring.
 
 ## Performance Considerations
 
@@ -303,6 +388,7 @@ For advanced configuration options, refer to the individual module documentation
 ### Module Structure
 
 When adding new functionality:
+
 1. Choose the appropriate module for your changes
 2. Follow existing patterns and conventions
 3. Update documentation accordingly

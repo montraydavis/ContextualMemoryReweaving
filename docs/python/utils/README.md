@@ -6,13 +6,88 @@ The utils module contains utility classes and helper functionality for the Conte
 
 The utils module provides foundational utilities that support the core CMR functionality. It includes hook management for capturing intermediate states, memory hierarchy organization, retrieval caching utilities, and other helper functions that enable efficient system operation.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Key Components](#key-components)
+- [Hook Management Details](#hook-management-details)
+- [Memory Organization](#memory-organization)
+- [Configuration](#configuration)
+- [Performance Considerations](#performance-considerations)
+- [Best Practices](#best-practices)
+- [Troubleshooting](#troubleshooting)
+- [Integration with CMR System](#integration-with-cmr-system)
+
+### Architecture Relationships
+
+```mermaid
+graph TD
+    subgraph "Utils Module"
+        A[Hook Manager] -->|Captures from| B[Transformer Layers]
+        A -->|Stores in| C[Memory Buffer]
+        
+        D[Memory Hierarchy] -->|Organizes| E[Memory Entries]
+        D -->|Used by| F[Retrieval Service]
+        
+        G[Retrieval Cache] -->|Caches| H[Similarity Matrices]
+        G -->|Caches| I[Query Results]
+        G -->|Used by| F
+        
+        J[Helper Utilities] --> K[Configuration]
+        J --> L[Logging]
+        J --> M[Performance]
+    end
+    
+    subgraph "External Systems"
+        B
+        F[Retrieval Service]
+    end
+    
+    style A fill:#9f9,stroke:#333,stroke-width:2px
+    style D fill:#ff9,stroke:#333,stroke-width:2px
+    style G fill:#ff9,stroke:#333,stroke-width:2px
+    style J fill:#9f9,stroke:#333,stroke-width:2px
+    
+    %% Legend
+    subgraph " "
+        direction TB
+        N[Current Implementation]:::current
+        O[Planned Feature]:::planned
+    end
+    
+    classDef current fill:#9f9,stroke:#333,stroke-width:2px
+    classDef planned fill:#ff9,stroke:#333,stroke-width:2px,stroke-dasharray: 5 5
+```
+
+**Key Components:**
+
+1. **Hook Manager** (Current)
+   - Captures hidden states from transformer layers
+   - Manages hook lifecycle and state storage
+
+2. **Memory Hierarchy** (Planned)
+   - Organizes memory entries for efficient retrieval
+   - Supports hierarchical memory organization
+
+3. **Retrieval Cache** (Planned)
+   - Caches similarity computations
+   - Stores query results for faster access
+
+4. **Helper Utilities** (Current)
+   - Configuration management
+   - Logging and monitoring
+   - Performance profiling
+
 ## Key Components
 
 ### Hook Manager (`hooks.py`)
 
+[View Class Documentation](./hooks.md)
+
 The `HookManager` class provides comprehensive hook management for capturing intermediate transformer states:
 
 **Core Features:**
+
 - **Forward Hook Registration**: Register hooks on transformer layers
 - **State Capture**: Capture hidden states during forward passes
 - **Hook Lifecycle Management**: Manage hook creation, activation, and cleanup
@@ -20,11 +95,13 @@ The `HookManager` class provides comprehensive hook management for capturing int
 - **Error Handling**: Robust error handling for hook operations
 
 **Hook Types:**
+
 - **Capture Hooks**: Capture intermediate hidden states
 - **Monitoring Hooks**: Monitor layer activations and performance
 - **Debug Hooks**: Debugging and diagnostic hooks
 
 **Usage Example:**
+
 ```python
 from utils.hooks import HookManager
 
@@ -49,6 +126,7 @@ hook_manager.remove_hooks()
 ```
 
 **Key Methods:**
+
 - `register_capture_hook()`: Register state capture hooks
 - `get_captured_data()`: Retrieve captured states
 - `remove_hooks()`: Clean up registered hooks
@@ -56,9 +134,12 @@ hook_manager.remove_hooks()
 
 ### Memory Hierarchy Utilities
 
-The memory hierarchy utilities provide structured organization of memory entries:
+[View Planned Implementation Details](./memory_hierarchy.md)
+
+Status: The memory hierarchy utilities described here are planned; there is no MemoryHierarchy implementation in the codebase today. The notes below are conceptual.
 
 **Hierarchy Features:**
+
 - **Clustering Algorithms**: Group similar memories together
 - **Tree-based Organization**: Hierarchical memory structure
 - **Efficient Traversal**: Fast memory search and retrieval
@@ -66,12 +147,14 @@ The memory hierarchy utilities provide structured organization of memory entries
 - **Memory Locality**: Optimize for memory access patterns
 
 **Organization Strategies:**
+
 - **Content-based Clustering**: Group by semantic similarity
 - **Temporal Clustering**: Group by time-based patterns
 - **Layer-based Organization**: Organize by transformer layer
 - **Task-specific Hierarchies**: Specialized organization for tasks
 
 **Usage Example:**
+
 ```python
 from models.advanced_retrieval import MemoryHierarchy
 
@@ -95,9 +178,12 @@ similar_memories = hierarchy.find_similar(
 
 ### Retrieval Cache Utilities
 
-The retrieval cache utilities provide efficient caching for memory operations:
+[View Planned Implementation Details](./retrieval_cache.md)
+
+Status: The retrieval cache utilities described here are planned; there is no RetrievalCache implementation in the codebase today. The notes below are conceptual.
 
 **Caching Features:**
+
 - **LRU Cache Management**: Least Recently Used eviction policy
 - **Multi-level Caching**: Hierarchical cache structure
 - **Cache Hit Optimization**: Maximize cache hit rates
@@ -105,12 +191,14 @@ The retrieval cache utilities provide efficient caching for memory operations:
 - **Cache Statistics**: Track cache performance metrics
 
 **Cache Types:**
+
 - **Query Result Cache**: Cache retrieval results
 - **Similarity Cache**: Cache similarity computations
 - **Ranking Cache**: Cache ranking results
 - **Computation Cache**: Cache expensive computations
 
 **Usage Example:**
+
 ```python
 from models.advanced_retrieval import RetrievalCache
 
@@ -138,18 +226,21 @@ else:
 The utils module includes various helper functions:
 
 **Tensor Utilities:**
+
 - Tensor shape manipulation
 - Efficient tensor operations
 - Memory-efficient tensor storage
 - Tensor serialization and deserialization
 
 **Configuration Utilities:**
+
 - Configuration validation
 - Default configuration management
 - Configuration merging and inheritance
 - Environment-based configuration
 
 **Logging Utilities:**
+
 - Structured logging for CMR components
 - Performance logging
 - Debug logging with context
@@ -160,6 +251,7 @@ The utils module includes various helper functions:
 ### Hook Registration Process
 
 **Registration Steps:**
+
 1. **Module Identification**: Identify target transformer module
 2. **Hook Function Creation**: Create appropriate hook function
 3. **Hook Registration**: Register hook with PyTorch module
@@ -169,12 +261,13 @@ The utils module includes various helper functions:
 ### Hook Function Types
 
 **Capture Hook Function:**
+
 ```python
 def capture_hook_fn(module, input, output):
     """Capture hidden states during forward pass."""
     # Extract hidden states from output
     hidden_states = output[0] if isinstance(output, tuple) else output
-    
+
     # Store captured states with metadata
     hook_manager.store_captured_state(
         hook_id=hook_id,
@@ -185,19 +278,20 @@ def capture_hook_fn(module, input, output):
 ```
 
 **Intervention Hook Function:**
+
 ```python
 def intervention_hook_fn(module, input, output):
     """Modify hidden states during forward pass."""
     # Get original hidden states
     hidden_states = output[0] if isinstance(output, tuple) else output
-    
+
     # Apply memory-enhanced modifications
     enhanced_states = apply_memory_enhancement(
         hidden_states=hidden_states,
         retrieved_memories=relevant_memories,
         integration_method='weighted_sum'
     )
-    
+
     # Return modified output
     if isinstance(output, tuple):
         return (enhanced_states,) + output[1:]
@@ -208,6 +302,7 @@ def intervention_hook_fn(module, input, output):
 ### Hook Performance Optimization
 
 **Optimization Strategies:**
+
 - **Selective Hook Activation**: Activate hooks only when needed
 - **Efficient State Storage**: Optimize memory usage for captured states
 - **Batch Hook Processing**: Process multiple hooks efficiently
@@ -218,8 +313,9 @@ def intervention_hook_fn(module, input, output):
 ### Hierarchical Memory Structure
 
 **Tree Structure:**
-```
-Memory Hierarchy Root
+
+```text
+Memory Hierarchy Root (Conceptual)
 ├── Cluster 1 (Semantic Group A)
 │   ├── Layer 4 Memories
 │   ├── Layer 6 Memories
@@ -235,6 +331,7 @@ Memory Hierarchy Root
 ### Clustering Algorithms
 
 **Supported Algorithms:**
+
 - **K-means Clustering**: Partition memories into k clusters
 - **Hierarchical Clustering**: Build tree-based memory hierarchy
 - **DBSCAN**: Density-based clustering for irregular shapes
@@ -243,6 +340,7 @@ Memory Hierarchy Root
 ### Memory Access Patterns
 
 **Optimization for Access Patterns:**
+
 - **Spatial Locality**: Group related memories together
 - **Temporal Locality**: Organize by access time patterns
 - **Semantic Locality**: Group semantically similar memories
@@ -294,6 +392,7 @@ cache_config = {
 ### Memory Management
 
 **Memory Optimization:**
+
 - **Efficient Storage**: Use memory-efficient data structures
 - **Garbage Collection**: Regular cleanup of unused objects
 - **Memory Pooling**: Reuse memory allocations
@@ -302,6 +401,7 @@ cache_config = {
 ### Computational Efficiency
 
 **Performance Optimization:**
+
 - **Vectorized Operations**: Use vectorized computations
 - **Batch Processing**: Process multiple items together
 - **Caching**: Cache expensive computations
@@ -316,7 +416,7 @@ cache_config = {
 3. **Error Handling**: Implement robust error handling
 4. **Performance Impact**: Minimize hook performance overhead
 
-### Memory Organization
+### Memory Organization Best Practices
 
 1. **Appropriate Clustering**: Choose suitable clustering parameters
 2. **Regular Maintenance**: Perform regular hierarchy maintenance
@@ -353,6 +453,7 @@ cache_config = {
 The utils module integrates with all CMR components:
 
 **Integration Points:**
+
 - **Models**: Hook integration with transformer models
 - **Memory Buffer**: Memory organization utilities
 - **Retrieval System**: Caching and hierarchy utilities
@@ -361,6 +462,7 @@ The utils module integrates with all CMR components:
 ### Utility APIs
 
 **Standardized Interfaces:**
+
 - Consistent utility APIs across components
 - Configurable utility parameters
 - Error handling and logging integration

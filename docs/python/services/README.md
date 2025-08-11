@@ -4,17 +4,442 @@ The services module provides retrieval and processing services for the Contextua
 
 ## Overview
 
+```mermaid
+graph TD
+    %% Main Flow
+    A[Input Query] -->|Validate Input|### 5. Query Processor
+
+[View Class Documentation](./query_processor.md)]
+    B -->|Extract Features| C[Semantic Matcher]
+    B -->|Score Relevance| D[Relevance Scorer]
+    C -->|Find Similar| E[Memory Retriever]
+    D -->|Filter by Score| E
+    E -->|Rank Results| F[Result Ranker]
+    F -->|Generate Response|### 4. Response Generator
+
+[View Class Documentation](./response_generator.md)]
+    G --> H[Output Response]
+    
+    %% Error Handling
+    A -->|Invalid Input| I[Error Handler]
+    C -->|No Matches| I
+    E -->|Retrieval Failed| I
+    I --> H
+    
+    %% Data Validation
+    subgraph "Data Validation"
+        VA[Input Validation] -->|Valid| B
+        VB[Semantic Validation] -->|Valid| C
+        VC[Result Validation] -->|Valid| F
+    end
+    
+    A --> VA
+    VC -->|Valid| F
+    
+    %% Performance Metrics
+    subgraph "Performance Monitoring"
+        M1[Query Processing Time]
+        M2[Cache Hit Rate]
+        M3[Retrieval Latency]
+        M4[Ranking Accuracy]
+    end
+    
+    B -->|Log| M1
+    C -->|Log| M2
+    E -->|Log| M3
+    F -->|Log| M4
+    
+    %% Component Interactions
+    subgraph "Memory Services"
+        C <-->|Context| D
+        C <-->|Cache| E
+        D <-->|Feedback| E
+        E <-->|Optimize| F
+    end
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style H fill:#9f9,stroke:#333,stroke-width:2px
+    style I fill:#f99,stroke:#333,stroke-width:2px
+    
+    %% Legend
+    subgraph " "
+        direction TB
+        L1[Process]:::process
+        L2[Validation]:::validation
+        L3[Metrics]:::metrics
+    end
+    
+    classDef process fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    classDef validation fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef metrics fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+```
+
 The services module implements high-level services that coordinate memory operations across the CMR system. It provides advanced retrieval strategies, semantic analysis capabilities, and intelligent ranking systems that enhance the quality and efficiency of memory operations.
 
-Note: The `python/services` package is a placeholder. The concrete implementations currently live in `models/advanced_retrieval.py` and are exposed directly from the models package.
+## Table of Contents
+
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+- [Key Components](#key-components)
+- [Integration Guide](#integration-guide)
+- [Performance Considerations](#performance-considerations)
+- [Service Architecture](#service-architecture)
+- [Configuration](#configuration)
+- [Performance Optimization](#performance-optimization)
+- [Quality Assurance](#quality-assurance)
+- [Integration with CMR System](#integration-with-cmr-system)
+- [Best Practices](#best-practices)
+- [Troubleshooting](#troubleshooting)
+- [Future Enhancements](#future-enhancements)
+
+## System Architecture
+
+### Data Flow
+
+1. **Query Processing**: Input queries are processed and normalized
+2. **Semantic Matching**: Finds semantically related memories
+3. **Relevance Scoring**: Assigns relevance scores to potential matches
+4. **Memory Retrieval**: Fetches the most relevant memories
+5. **Result Ranking**: Ranks results based on multiple criteria
+6. **Response Generation**: Generates final response with memory context
 
 ## Key Components
 
-### Advanced Memory Retrieval Services
+### 1. Advanced Memory Retrieval Services
 
-The services module provides sophisticated memory retrieval capabilities through the `AdvancedMemoryRetriever` system:
+[View Class Documentation](./advanced_retrieval_service.md)
 
-**Core Retrieval Services:**
+```mermaid
+graph TD
+    A[Query] --> B{Multi-Stage\nRetrieval}
+    B --> C[Keyword Search]
+    B --> D[Semantic Search]
+    B --> E[Contextual Filtering]
+    C --> F[Result Aggregator]
+    D --> F
+    E --> F
+    F --> G[Re-Ranking]
+    G --> H[Final Results]
+    
+    subgraph "Retrieval Strategies"
+        C
+        D
+        E
+    end
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style H fill:#9f9,stroke:#333,stroke-width:2px
+```
+
+The services module provides sophisticated memory retrieval capabilities through the `AdvancedMemoryRetriever` system, which implements a multi-stage retrieval pipeline:
+
+1. **Multi-Stage Retrieval**: Combines multiple retrieval strategies
+2. **Hybrid Search**: Merges keyword and semantic search results
+3. **Context-Aware Filtering**: Applies contextual constraints
+4. **Result Re-ranking**: Reranks results based on multiple criteria
+
+#### Key Features
+
+- **Adaptive Retrieval**: Dynamically adjusts retrieval strategy based on query type
+- **Performance Optimization**: Efficient indexing and caching mechanisms
+- **Extensible Architecture**: Easy to add new retrieval methods
+- **Context Integration**: Considers conversation history and user context
+
+#### Usage Example
+
+```python
+from services.retrieval import AdvancedMemoryRetriever
+from models import MemoryEntry
+
+# Initialize with configuration
+retriever = AdvancedMemoryRetriever(
+    strategies=['semantic', 'keyword', 'temporal'],
+    weights={'semantic': 0.6, 'keyword': 0.3, 'temporal': 0.1},
+    cache_size=1000
+)
+
+# Add memories
+memories = [MemoryEntry(...) for _ in range(1000)]
+retriever.index(memories)
+
+# Retrieve relevant memories
+results = retriever.retrieve(
+    query="example query",
+    context={"conversation_id": "123"},
+    top_k=5
+)
+```
+
+### 2. Semantic Matching Service
+
+[View Class Documentation](./semantic_matching_service.md)
+
+```mermaid
+graph TD
+    %% Main Flow
+    A[Input Text] -->|Validate| B[Text Preprocessing]
+    B -->|Tokenize| C[Embedding Generation]
+    C -->|Encode| D[Vector Database]
+    D -->|Query| E[Similarity Search]
+    E -->|Sort| F[Ranked Results]
+    
+    %% Error Handling
+    A -->|Invalid Text| G[Error Handler]
+    B -->|Preprocessing Error| G
+    C -->|Embedding Error| G
+    D -->|Query Error| G
+    G -->|Error Message| H[Error Response]
+    
+    %% Data Validation
+    subgraph "Validation Steps"
+        VA[Input Validation] -->|Text Length| VB[Language Detection]
+        VB -->|Supported Language| VC[Content Safety]
+    end
+    
+    A --> VA
+    VC -->|Valid| B
+    
+    %% Performance Metrics
+    subgraph "Performance Metrics"
+        M1[Preprocessing Time]
+        M2[Embedding Latency]
+        M3[Query Time]
+        M4[Cache Hit Rate]
+        M5[Similarity Distribution]
+    end
+    
+    B -->|Time| M1
+    C -->|Time| M2
+    D -->|Time| M3
+    E -->|Stats| M4
+    E -->|Scores| M5
+    
+    %% Component Interactions
+    subgraph "Semantic Matching"
+        B <-->|Normalized Text| C
+        C <-->|Cache| D
+        D <-->|Update Index| E
+        E -->|Feedback| B
+    end
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style F fill:#9f9,stroke:#333,stroke-width:2px
+    style H fill:#f99,stroke:#333,stroke-width:2px
+    
+    %% Legend
+    subgraph " "
+        direction TB
+        L1[Process]:::process
+        L2[Validation]:::validation
+        L3[Metrics]:::metrics
+        L4[Error]:::error
+    end
+    
+    classDef process fill:#e1f5fe,stroke:#0288d1,stroke-width:2px
+    classDef validation fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef metrics fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef error fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+```
+
+The Semantic Matching Service enables understanding and matching of text based on meaning rather than just keywords.
+
+#### Semantic Matching Key Components
+
+1. **Text Preprocessing**
+   - Tokenization and normalization
+   - Stopword removal
+   - Lemmatization/Stemming
+
+2. **Embedding Generation**
+   - Transformer-based embeddings
+   - Contextual representations
+   - Dimensionality reduction
+
+3. **Vector Similarity**
+   - Cosine similarity
+   - Approximate Nearest Neighbor (ANN) search
+   - Hybrid scoring
+
+#### Semantic Matching Usage Example
+
+```python
+from services.semantic import SemanticMatcher
+
+# Initialize with pre-trained model
+matcher = SemanticMatcher(
+    model_name='all-mpnet-base-v2',
+    max_seq_length=512
+)
+
+# Add documents to index
+documents = ["First document", "Second document"]
+matcher.index(documents)
+
+# Find similar documents
+results = matcher.find_similar(
+    query="example query",
+    top_k=3,
+    threshold=0.7
+)
+```
+
+### 3. Result Ranking Service
+
+```mermaid
+graph TD
+    A[Candidate Results] --> B[Feature Extraction]
+    B --> C[Score Calculation]
+    C --> D[Sorting]
+    D --> E[Final Ranking]
+    
+    subgraph "Ranking Features"
+        B1[Relevance Score]
+        B2[Freshness]
+        B3[Popularity]
+        B4[User Preferences]
+    end
+    
+    B --> B1 & B2 & B3 & B4
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style E fill:#9f9,stroke:#333,stroke-width:2px
+```
+
+The Result Ranking Service provides sophisticated ranking of search results using multiple signals.
+
+#### Ranking Factors
+
+1. **Relevance**
+   - Semantic similarity
+   - Keyword matching
+   - Contextual relevance
+
+2. **Freshness**
+   - Document age
+   - Update frequency
+   - Temporal decay
+
+3. **Popularity**
+   - Click-through rates
+   - User engagement
+   - Social signals
+
+#### Result Ranking Usage Example
+
+```python
+from services.ranking import ResultRanker
+
+# Initialize ranker with custom weights
+ranker = ResultRanker(
+    weights={
+        'relevance': 0.5,
+        'freshness': 0.3,
+        'popularity': 0.2
+    },
+    decay_rate=0.1
+)
+
+# Rank results
+ranked_results = ranker.rank(
+    results=search_results,
+    query=user_query,
+    context={
+        'user_id': '123',
+        'session_id': 'abc'
+    }
+)
+```
+
+## Integration Guide
+
+### Service Composition
+
+```mermaid
+graph TB
+    A[Client Request] --> B[API Gateway]
+    B --> C[Query Service]
+    C --> D[Retrieval Service]
+    C --> E[Semantic Service]
+    D --> F[Ranking Service]
+    E --> F
+    F --> G[Response Formatter]
+    G --> H[Client Response]
+    
+    subgraph "Core Services"
+        C
+        D
+        E
+        F
+    end
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style H fill:#9f9,stroke:#333,stroke-width:2px
+```
+
+### Configuration Options
+
+```yaml
+services:
+  retrieval:
+    strategies:
+      - name: semantic
+        weight: 0.6
+      - name: keyword
+        weight: 0.3
+      - name: temporal
+        weight: 0.1
+    cache:
+      enabled: true
+      ttl: 3600
+      max_size: 10000
+  
+  semantic:
+    model: all-mpnet-base-v2
+    max_sequence_length: 512
+    batch_size: 32
+  
+  ranking:
+    weights:
+      relevance: 0.5
+      freshness: 0.3
+      popularity: 0.2
+    decay_rate: 0.1
+```
+
+## Performance Considerations
+
+### Caching Strategy
+
+```mermaid
+graph LR
+    A[Request] --> B{Cache Lookup}
+    B -->|Hit| C[Return Cached]
+    B -->|Miss| D[Process Request]
+    D --> E[Update Cache]
+    E --> F[Return Result]
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style C fill:#9f9,stroke:#333,stroke-width:2px
+    style F fill:#9f9,stroke:#333,stroke-width:2px
+```
+
+### Scaling Recommendations
+
+1. **Horizontal Scaling**
+   - Stateless service design
+   - Load balancing
+   - Auto-scaling groups
+
+2. **Database Optimization**
+   - Read replicas
+   - Sharding
+   - Connection pooling
+
+3. **Caching Layers**
+   - Distributed caching
+   - Multi-level caching
+   - Smart invalidation
+
 - **Semantic Memory Matching**: Content-based similarity computation
 - **Contextual Relevance Scoring**: Context-aware relevance assessment
 - **Multi-criteria Ranking**: Multi-dimensional memory ranking
@@ -22,6 +447,7 @@ The services module provides sophisticated memory retrieval capabilities through
 - **Retrieval Caching**: Efficient caching for repeated queries
 
 **Retrieval Strategies:**
+
 - **Semantic Similarity**: Content-based matching using embeddings
 - **Contextual Relevance**: Context-aware scoring mechanisms
 - **Multi-criteria**: Combined ranking using multiple factors
@@ -34,6 +460,7 @@ The services module provides sophisticated memory retrieval capabilities through
 The `SemanticMemoryMatcher` provides content-based similarity computation:
 
 **Key Features:**
+
 - High-dimensional similarity computation
 - Efficient similarity search algorithms
 - Configurable similarity thresholds
@@ -41,12 +468,14 @@ The `SemanticMemoryMatcher` provides content-based similarity computation:
 - Similarity caching for performance
 
 **Similarity Metrics:**
+
 - Cosine similarity for semantic matching
 - Euclidean distance for geometric relationships
 - Dot product for attention-based similarity
 - Custom similarity functions
 
 **Usage Example:**
+
 ```python
 from models.advanced_retrieval import SemanticMemoryMatcher
 
@@ -68,18 +497,21 @@ similarities = matcher.compute_similarities(
 The `ContextualRelevanceScorer` provides context-aware relevance assessment:
 
 **Contextual Features:**
+
 - Multi-head attention for context analysis
 - Position-aware relevance scoring
 - Temporal context consideration
 - Task-specific context adaptation
 
 **Scoring Mechanisms:**
+
 - Attention-based relevance computation
 - Context vector generation
 - Relevance score normalization
 - Confidence estimation
 
 **Usage Example:**
+
 ```python
 from models.advanced_retrieval import ContextualRelevanceScorer
 
@@ -101,6 +533,7 @@ relevance_scores = scorer.score_relevance(
 The `MultiCriteriaRanker` provides sophisticated ranking using multiple criteria:
 
 **Ranking Criteria:**
+
 - **Relevance**: Content relevance to current context
 - **Similarity**: Semantic similarity to query
 - **Recency**: Temporal freshness of memories
@@ -109,6 +542,7 @@ The `MultiCriteriaRanker` provides sophisticated ranking using multiple criteria
 - **Frequency**: Access frequency and popularity
 
 **Ranking Features:**
+
 - Weighted combination of multiple criteria
 - Configurable criterion weights
 - Adaptive weight adjustment
@@ -116,6 +550,7 @@ The `MultiCriteriaRanker` provides sophisticated ranking using multiple criteria
 - Diversity-aware selection
 
 **Usage Example:**
+
 ```python
 from models.advanced_retrieval import MultiCriteriaRanker
 
@@ -142,6 +577,7 @@ ranked_memories = ranker.rank_memories(
 The `MemoryHierarchy` service provides structured memory organization:
 
 **Hierarchical Features:**
+
 - Tree-based memory organization
 - Cluster-based memory grouping
 - Hierarchical similarity search
@@ -149,12 +585,14 @@ The `MemoryHierarchy` service provides structured memory organization:
 - Efficient traversal algorithms
 
 **Organization Strategies:**
+
 - Content-based clustering
 - Temporal hierarchy organization
 - Task-specific hierarchies
 - Adaptive hierarchy restructuring
 
 **Usage Example:**
+
 ```python
 from models.advanced_retrieval import MemoryHierarchy
 
@@ -179,6 +617,7 @@ retrieved = hierarchy.retrieve_hierarchical(
 The `RetrievalCache` service provides efficient caching for memory operations:
 
 **Caching Features:**
+
 - LRU-based cache management
 - Query-result caching
 - Similarity computation caching
@@ -186,12 +625,14 @@ The `RetrievalCache` service provides efficient caching for memory operations:
 - Cache hit rate optimization
 
 **Cache Types:**
+
 - Query result caching
 - Similarity matrix caching
 - Ranking result caching
 - Intermediate computation caching
 
 **Usage Example:**
+
 ```python
 from models.advanced_retrieval import RetrievalCache
 
@@ -213,25 +654,25 @@ if cached_result is None:
 
 The services module coordinates multiple services for optimal memory operations:
 
-```
-Advanced Memory Retrieval
-├── Semantic Memory Matcher
+```text
+Advanced Memory Retrieval (Planned)
+├── Semantic Memory Matcher (Planned)
 │   ├── Similarity Computation
 │   ├── Threshold Management
 │   └── Batch Processing
-├── Contextual Relevance Scorer
+├── Contextual Relevance Scorer (Planned)
 │   ├── Attention Mechanisms
 │   ├── Context Analysis
 │   └── Relevance Scoring
-├── Multi-criteria Ranker
+├── Multi-criteria Ranker (Planned)
 │   ├── Criterion Computation
 │   ├── Weight Management
 │   └── Ranking Algorithms
-├── Memory Hierarchy
+├── Memory Hierarchy (Planned)
 │   ├── Clustering Algorithms
 │   ├── Tree Management
 │   └── Traversal Optimization
-└── Retrieval Cache
+└── Retrieval Cache (Planned)
     ├── Cache Management
     ├── Hit Rate Optimization
     └── Memory Efficiency
@@ -240,6 +681,7 @@ Advanced Memory Retrieval
 ### Service Integration
 
 **Integration Points:**
+
 - Seamless service composition
 - Configurable service pipelines
 - Performance optimization across services
@@ -305,12 +747,14 @@ retrieval_strategy_config = {
 ### Service-level Optimization
 
 **Optimization Strategies:**
+
 - Parallel service execution
 - Service result caching
 - Batch processing optimization
 - Resource-aware service scheduling
 
 **Performance Features:**
+
 - Asynchronous service calls
 - Service pipeline optimization
 - Load balancing across services
@@ -319,12 +763,14 @@ retrieval_strategy_config = {
 ### Caching Strategies
 
 **Multi-level Caching:**
+
 - Service-level result caching
 - Computation-level caching
 - Memory-level caching
 - Disk-level caching for large datasets
 
 **Cache Optimization:**
+
 - Intelligent cache warming
 - Adaptive cache sizing
 - Cache hit rate optimization
@@ -335,12 +781,14 @@ retrieval_strategy_config = {
 ### Service Quality Metrics
 
 **Quality Indicators:**
+
 - Retrieval accuracy and precision
 - Ranking quality assessment
 - Service response time
 - Resource utilization efficiency
 
 **Quality Monitoring:**
+
 - Real-time quality tracking
 - Quality trend analysis
 - Service performance benchmarking
@@ -349,6 +797,7 @@ retrieval_strategy_config = {
 ### Error Handling
 
 **Robust Error Handling:**
+
 - Service failure detection
 - Graceful degradation strategies
 - Fallback service mechanisms
@@ -361,6 +810,7 @@ retrieval_strategy_config = {
 The services module integrates with:
 
 **CMR Components:**
+
 - **Memory Buffer**: Direct memory access and storage
 - **Retrieval System**: Advanced retrieval capabilities
 - **Monitoring System**: Service performance tracking
@@ -369,6 +819,7 @@ The services module integrates with:
 ### Service APIs
 
 **Standardized APIs:**
+
 - Consistent service interfaces
 - Configurable service parameters
 - Standardized error handling
