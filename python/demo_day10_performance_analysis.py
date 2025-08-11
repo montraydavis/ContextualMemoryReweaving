@@ -37,8 +37,8 @@ def create_test_model() -> FullCMRModel:
     """Create a test CMR model for performance analysis."""
     print("🔧 Creating test CMR model...")
     
-    # Small GPT-OSS 20B configuration for testing
-    base_config = AutoConfig.from_pretrained("openai-community/gpt2")
+    # Small LLM configuration for testing
+    base_config = AutoConfig.from_pretrained("mistralai/Ministral-8B-Instruct-2410")
     
     # CMR configuration
     cmr_config = {

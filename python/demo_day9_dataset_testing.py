@@ -20,8 +20,8 @@ from experiments.dataset_testing import CMRDatasetTester
 
 def create_mock_cmr_model():
     """Create a mock CMR model for testing purposes."""
-    # Small GPT-OSS 20B configuration for testing
-    llm_model_config = AutoConfig.from_pretrained("openai-community/gpt2")
+    # Small LLM configuration for testing
+    llm_model_config = AutoConfig.from_pretrained("mistralai/Ministral-8B-Instruct-2410")
     
     # CMR configuration
     cmr_config = {
@@ -189,7 +189,7 @@ def run_dataset_testing_demo():
         
         # Create tokenizer
         print("\n🔤 Creating tokenizer...")
-        tokenizer = AutoTokenizer.from_pretrained('openai-community/gpt2')
+        tokenizer = AutoTokenizer.from_pretrained('mistralai/Ministral-8B-Instruct-2410')
         tokenizer.pad_token = tokenizer.eos_token
         print("   ✅ Tokenizer created successfully")
         
@@ -329,7 +329,7 @@ def run_quick_test():
     
     # Create mock model and tester
     cmr_model = create_mock_cmr_model()
-    tokenizer = AutoTokenizer.from_pretrained('openai-community/gpt2')
+    tokenizer = AutoTokenizer.from_pretrained('mistralai/Ministral-8B-Instruct-2410')
     tokenizer.pad_token = tokenizer.eos_token
     
     tester = CMRDatasetTester(cmr_model, tokenizer, {'enable_optimization': False})

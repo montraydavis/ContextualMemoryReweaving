@@ -1,22 +1,32 @@
 """
 Shared pytest fixtures for CMR tests.
+
+Also ensures project import paths are available from any test subdirectory.
 """
+import os
+import sys
 import pytest
 import torch
 from transformers import AutoConfig
 from models.memory_buffer import LayeredMemoryBuffer
 
+# Ensure the `python` directory is on sys.path so `models/*`, `experiments/*` resolve
+_TESTS_DIR = os.path.dirname(__file__)
+_PYTHON_DIR = os.path.abspath(os.path.join(_TESTS_DIR, '..'))
+if _PYTHON_DIR not in sys.path:
+    sys.path.insert(0, _PYTHON_DIR)
+
 
 @pytest.fixture
 def small_config():
     """Create small configuration for testing."""
-    return AutoConfig.from_pretrained("openai-community/gpt2")
+    return AutoConfig.from_pretrained("google/gemma-3-4b-it")
 
 
 @pytest.fixture
 def medium_config():
     """Create medium configuration for testing."""
-    return AutoConfig.from_pretrained("openai-community/gpt2")
+    return AutoConfig.from_pretrained("google/gemma-3-4b-it")
 
 
 @pytest.fixture

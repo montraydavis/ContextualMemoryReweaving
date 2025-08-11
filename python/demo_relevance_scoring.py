@@ -240,7 +240,7 @@ def demonstrate_integration_with_cmr_transformer():
     print("=" * 60)
     
     # Create small config for demonstration
-    config = AutoConfig.from_pretrained("openai-community/gpt2")
+    config = AutoConfig.from_pretrained("mistralai/Ministral-8B-Instruct-2410")
     
     memory_config = {
         'target_layers': [1, 2],

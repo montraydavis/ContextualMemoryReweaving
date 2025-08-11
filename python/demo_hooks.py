@@ -50,7 +50,7 @@ def demo_multiple_layer_hooks():
     
     # Create small Mistral model for testing
     print("📥 Loading Mistral model for testing...")
-    model_name = "mistralai/Mistral-7B-v0.1"  # Using smaller Mistral variant for testing
+    model_name = "mistralai/Ministral-8B-Instruct-2410"  # Using smaller Mistral variant for testing
     
     try:
         # Load tokenizer and model
@@ -210,7 +210,7 @@ def demo_cmr_integration():
     # Create Mistral configuration
     print("📥 Loading Mistral configuration...")
     try:
-        config = AutoConfig.from_pretrained("mistralai/Mistral-7B-v0.1")
+        config = AutoConfig.from_pretrained("mistralai/Ministral-8B-Instruct-2410")
         print(f"✅ Mistral config loaded: {config.num_hidden_layers} layers, {config.hidden_size} hidden size")
         
         memory_config = {
@@ -260,7 +260,7 @@ def demo_cmr_integration():
         print("🔄 Using fallback configuration...")
         
         # Fallback config
-        config = AutoConfig.from_pretrained("openai-community/gpt2")
+        config = AutoConfig.from_pretrained("mistralai/Ministral-8B-Instruct-2410")
         memory_config = {
             'target_layers': [2, 4],
             'buffer_size': 50

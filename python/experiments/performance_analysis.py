@@ -567,7 +567,7 @@ class CMRPerformanceAnalyzer:
         print(f"    📄 Report saved to {output_path / 'performance_analysis_report.json'}")
     
     def _get_model_config_summary(self) -> Dict:
-        """Get summary of model configuration."""
+        """Get summary of LLM configuration."""
         return {
             'model_type': type(self.cmr_model).__name__,
             'base_model_config': str(self.cmr_model.base_model.config),

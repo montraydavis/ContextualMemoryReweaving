@@ -7,7 +7,7 @@ from typing import Optional
 import torch
 
 
-@dataclass
+@dataclass(eq=False)
 class MemoryEntry:
     """Data model representing a captured memory state.
 

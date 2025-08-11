@@ -16,53 +16,79 @@ class LayeredStateReconstructor(nn.Module):
     Reconstructs stored memory states into optimized contextual embeddings
     for integration into current forward pass.
     """
-    
-    def __init__(self, 
-                 hidden_size: int,
-                 num_layers: int,
-                 reconstruction_method: str = "hierarchical",
-                 compressed_size: Optional[int] = None,
-                 max_memory_tokens: int = 512,
-                 compression_ratio: float = 0.5):
+
+    def __init__(
+        self,
+        hidden_size: int,
+        num_layers: int,
+        reconstruction_method: str = "hierarchical",
+        compressed_size: Optional[int] = None,
+        max_memory_tokens: int = 512,
+        compression_ratio: float = 0.5,
+    ):
         super().__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
+        # Normalize method names to match tests ("attention" vs "attention_based")
+        if reconstruction_method == "attention_based":
+            reconstruction_method = "attention"
         self.reconstruction_method = reconstruction_method
         self.compressed_size = compressed_size or int(hidden_size * compression_ratio)
         self.max_memory_tokens = max_memory_tokens
         self.compression_ratio = compression_ratio
-        
-        # Initialize reconstruction modules based on method
-        if reconstruction_method == "hierarchical":
-            self.reconstructor = HierarchicalReconstructor(hidden_size, self.compressed_size)
-        elif reconstruction_method == "attention_based":
-            self.reconstructor = AttentionBasedReconstructor(hidden_size, max_memory_tokens)
-        elif reconstruction_method == "mlp":
-            self.reconstructor = MLPReconstructor(hidden_size, self.compressed_size)
-        else:
-            raise ValueError(f"Unknown reconstruction method: {reconstruction_method}")
-        
-        # Memory attention for selecting relevant memories
+
+        # Per-layer reconstructors, projectors and blenders expected by tests
+        self.layer_reconstructors = nn.ModuleDict()
+        self.memory_projectors = nn.ModuleDict()
+        self.context_blenders = nn.ModuleDict()
+        self._build_reconstructors()
+
+        # Positional embeddings for memories
+        self.memory_position_embeddings = nn.Embedding(max_memory_tokens, hidden_size)
+
+        # Attention for selecting relevant memories in streaming mode
         self.memory_attention = MemoryAttention(hidden_size, max_memory_tokens)
-        
-        # Context blending for integrating reconstructed memories
-        self.context_blender = ContextBlender(hidden_size)
-        
+
         # Layer-specific reconstruction weights
         self.layer_weights = nn.Parameter(torch.ones(num_layers))
-        
+
         # Reconstruction quality metrics
         self.reconstruction_stats = {
-            'total_reconstructions': 0,
-            'avg_reconstruction_quality': 0.0,
-            'memory_utilization': 0.0
+            "total_reconstructions": 0,
+            "avg_reconstruction_quality": 0.0,
+            "memory_utilization": 0.0,
         }
+
+    def _build_reconstructors(self) -> None:
+        for layer_idx in range(self.num_layers):
+            key = f"layer_{layer_idx}"
+            if self.reconstruction_method == "hierarchical":
+                self.layer_reconstructors[key] = HierarchicalReconstructor(
+                    self.hidden_size, self.compressed_size
+                )
+            elif self.reconstruction_method == "attention":
+                self.layer_reconstructors[key] = AttentionBasedReconstructor(
+                    self.hidden_size, self.max_memory_tokens
+                )
+            elif self.reconstruction_method == "mlp":
+                self.layer_reconstructors[key] = MLPReconstructor(
+                    self.hidden_size, self.compressed_size
+                )
+            else:
+                raise ValueError(f"Unknown reconstruction method: {self.reconstruction_method}")
+
+            # Identity projector (kept for API completeness)
+            self.memory_projectors[key] = nn.Linear(self.hidden_size, self.hidden_size)
+            # Per-layer context blender
+            self.context_blenders[key] = ContextBlender(self.hidden_size)
     
-    def forward(self, 
-                current_hidden_states: torch.Tensor,
-                memory_buffer: LayeredMemoryBuffer,
-                layer_idx: int,
-                sequence_position: int = 0) -> Tuple[torch.Tensor, Dict]:
+    def forward(
+        self,
+        current_hidden_states: torch.Tensor,
+        memory_buffer: LayeredMemoryBuffer,
+        layer_idx: int,
+        sequence_position: int = 0,
+    ) -> Tuple[torch.Tensor, Dict]:
         """
         Reconstruct and integrate memory states with current hidden states.
         
@@ -98,15 +124,17 @@ class LayeredStateReconstructor(nn.Module):
         )
         
         # Reconstruct memory states using selected method
-        reconstructed_memories = self.reconstructor(attended_memories)
+        reconstructed_memories = self.layer_reconstructors[f"layer_{layer_idx}"](
+            attended_memories, current_hidden_states
+        )
         
         # Blend reconstructed memories with current states
-        enhanced_states = self.context_blender(
-            current_hidden_states, reconstructed_memories, layer_idx
+        layer_weight = torch.sigmoid(self.layer_weights[layer_idx])
+        enhanced_states = self.context_blenders[f"layer_{layer_idx}"](
+            current_hidden_states, reconstructed_memories, layer_weight
         )
         
         # Apply layer-specific weighting
-        layer_weight = torch.sigmoid(self.layer_weights[layer_idx])
         final_states = layer_weight * enhanced_states + (1 - layer_weight) * current_hidden_states
         
         # Update reconstruction statistics
@@ -115,10 +143,10 @@ class LayeredStateReconstructor(nn.Module):
         )
         
         reconstruction_info = {
-            'num_memories_used': len(relevant_memories),
-            'reconstruction_quality': reconstruction_quality.item(),
-            'layer_weight': layer_weight.item(),
-            'attention_entropy': self._compute_attention_entropy(attention_weights)
+            "num_memories_used": len(relevant_memories),
+            "reconstruction_quality": reconstruction_quality.item(),
+            "layer_weight": layer_weight.item(),
+            "attention_entropy": self._compute_attention_entropy(attention_weights),
         }
         
         self.reconstruction_stats['total_reconstructions'] += 1
@@ -129,6 +157,60 @@ class LayeredStateReconstructor(nn.Module):
         )
         
         return final_states, reconstruction_info
+
+    def _prepare_memory_states(
+        self, memory_entries: List[MemoryEntry], batch_size: int
+    ) -> Optional[torch.Tensor]:
+        """Prepare memory states tensor with positional embeddings.
+
+        Returns a tensor of shape [batch_size, num_memories, hidden_size] or None if
+        memory_entries is empty.
+        """
+        if memory_entries is None or len(memory_entries) == 0:
+            return None
+        device = self.layer_weights.device
+        memory_tensor = torch.stack([m.hidden_state.squeeze(0) for m in memory_entries]).to(device)
+        num_memories = memory_tensor.shape[0]
+
+        # Add position embeddings
+        positions = torch.arange(num_memories, device=device).clamp(max=self.max_memory_tokens - 1)
+        pos_emb = self.memory_position_embeddings(positions)  # [num_memories, hidden_size]
+        memory_tensor = memory_tensor + pos_emb
+
+        memory_tensor = memory_tensor.unsqueeze(0).expand(batch_size, -1, -1)
+        return memory_tensor
+
+    def reconstruct_layer_memories(
+        self,
+        layer_idx: int,
+        memory_entries: List[MemoryEntry],
+        current_hidden_states: torch.Tensor,
+    ) -> torch.Tensor:
+        """High-level API expected by unit tests.
+
+        Prepares memories, reconstructs with the per-layer module, and blends into
+        the current hidden states. Returns enhanced hidden states.
+        """
+        batch_size = current_hidden_states.shape[0]
+        memory_states = self._prepare_memory_states(memory_entries, batch_size)
+        if memory_states is None:
+            return current_hidden_states
+
+        # Optional projection hook
+        proj = self.memory_projectors[f"layer_{layer_idx}"]
+        memory_states = proj(memory_states)
+
+        # Reconstruct memory representations (shape preserved: [B, M, H])
+        reconstructed = self.layer_reconstructors[f"layer_{layer_idx}"](
+            memory_states, current_hidden_states
+        )
+
+        # Blend with current states
+        layer_weight = torch.sigmoid(self.layer_weights[layer_idx])
+        enhanced = self.context_blenders[f"layer_{layer_idx}"](
+            current_hidden_states, reconstructed, layer_weight
+        )
+        return enhanced
 
     def _compute_reconstruction_quality(self,
                                       original: torch.Tensor,
@@ -208,7 +290,7 @@ class HierarchicalReconstructor(nn.Module):
             batch_first=True
         )
 
-    def forward(self, memory_states: torch.Tensor) -> torch.Tensor:
+    def forward(self, memory_states: torch.Tensor, current_states: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
         Args:
             memory_states: [batch, num_memories, hidden_size]
@@ -250,12 +332,20 @@ class AttentionBasedReconstructor(nn.Module):
         self.hidden_size = hidden_size
         self.max_memories = max_memories
 
-        # Cross-attention layers
-        self.cross_attention = nn.MultiheadAttention(
+        # Self-attention over memories
+        self.self_attention = nn.MultiheadAttention(
             embed_dim=hidden_size,
             num_heads=min(8, hidden_size // 64),
             dropout=0.1,
             batch_first=True
+        )
+
+        # Cross-attention: allow memories to incorporate current state context
+        self.cross_attention = nn.MultiheadAttention(
+            embed_dim=hidden_size,
+            num_heads=min(8, hidden_size // 64),
+            dropout=0.1,
+            batch_first=True,
         )
 
         # Feed-forward network
@@ -271,27 +361,34 @@ class AttentionBasedReconstructor(nn.Module):
         self.norm2 = nn.LayerNorm(hidden_size)
         self.norm3 = nn.LayerNorm(hidden_size)
 
-    def forward(self, memory_states: torch.Tensor) -> torch.Tensor:
+    def forward(self, memory_states: torch.Tensor, current_states: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
         Args:
             memory_states: [batch, num_memories, hidden_size]
+            current_states: [batch, seq_len, hidden_size]
 
         Returns:
             reconstructed: [batch, num_memories, hidden_size]
         """
-        # Self-attention on memory states
-        attended_memories, _ = self.cross_attention(
-            query=memory_states,
-            key=memory_states,
-            value=memory_states
+        # Self-attention on memories
+        self_attended, _ = self.self_attention(
+            query=memory_states, key=memory_states, value=memory_states
         )
+        mem = self.norm1(memory_states + self_attended)
 
-        # Residual connection and normalization
-        memory_states = self.norm1(memory_states + attended_memories)
+        # Cross-attention from memories to current states (optional)
+        if current_states is not None:
+            cross_attended, _ = self.cross_attention(
+                query=mem, key=current_states, value=current_states
+            )
+            mem = self.norm2(mem + cross_attended)
+        else:
+            # Keep API behavior consistent
+            mem = self.norm2(mem)
 
-        # Feed-forward network
-        ffn_output = self.ffn(memory_states)
-        reconstructed = self.norm2(memory_states + ffn_output)
+        # Feed-forward refinement
+        ffn_output = self.ffn(mem)
+        reconstructed = self.norm3(mem + ffn_output)
 
         return reconstructed
 
@@ -322,7 +419,7 @@ class MLPReconstructor(nn.Module):
             nn.Sigmoid()
         )
 
-    def forward(self, memory_states: torch.Tensor) -> torch.Tensor:
+    def forward(self, memory_states: torch.Tensor, current_states: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
         Args:
             memory_states: [batch, num_memories, hidden_size]
@@ -360,14 +457,18 @@ class MemoryAttention(nn.Module):
         self.scale = math.sqrt(hidden_size)
         self.dropout = nn.Dropout(0.1)
 
-    def forward(self,
-                queries: torch.Tensor,
-                memory_states: torch.Tensor,
-                memory_mask: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(
+        self,
+        queries: torch.Tensor,
+        memory_keys: torch.Tensor,
+        memory_values: Optional[torch.Tensor] = None,
+        memory_mask: Optional[torch.Tensor] = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Args:
             queries: [batch, seq_len, hidden_size]
-            memory_states: [batch, num_memories, hidden_size]
+            memory_keys: [batch, num_memories, hidden_size]
+            memory_values: [batch, num_memories, hidden_size]
             memory_mask: [batch, num_memories]
 
         Returns:
@@ -375,12 +476,14 @@ class MemoryAttention(nn.Module):
             attention_weights: [batch, seq_len, num_memories]
         """
         batch_size, seq_len, hidden_size = queries.shape
-        num_memories = memory_states.shape[1]
+        if memory_values is None:
+            memory_values = memory_keys
+        num_memories = memory_keys.shape[1]
 
         # Project inputs
         Q = self.query_proj(queries)  # [batch, seq_len, hidden_size]
-        K = self.key_proj(memory_states)  # [batch, num_memories, hidden_size]
-        V = self.value_proj(memory_states)  # [batch, num_memories, hidden_size]
+        K = self.key_proj(memory_keys)  # [batch, num_memories, hidden_size]
+        V = self.value_proj(memory_values)  # [batch, num_memories, hidden_size]
 
         # Compute attention scores
         scores = torch.bmm(Q, K.transpose(1, 2)) / self.scale  # [batch, seq_len, num_memories]
@@ -428,17 +531,19 @@ class ContextBlender(nn.Module):
         # Output projection
         self.output_proj = nn.Linear(hidden_size, hidden_size)
 
-    def forward(self,
-                current_states: torch.Tensor,
-                memory_states: torch.Tensor,
-                layer_idx: int) -> torch.Tensor:
+    def forward(
+        self,
+        current_states: torch.Tensor,
+        memory_states: torch.Tensor,
+        layer_weight: Union[float, torch.Tensor],
+    ) -> torch.Tensor:
         """
         Blend current states with reconstructed memory states.
 
         Args:
             current_states: [batch, seq_len, hidden_size]
             memory_states: [batch, num_memories, hidden_size]
-            layer_idx: Current layer index (for layer-specific processing)
+            layer_weight: Scalar mixing weight for the layer
 
         Returns:
             blended_states: [batch, seq_len, hidden_size]

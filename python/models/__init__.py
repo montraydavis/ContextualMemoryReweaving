@@ -1,44 +1,21 @@
-"""Models package for ContextMemoryReweaving.
+from .backbones.base_adapter import BackboneAdapter  # noqa: F401
+from .backbones.mistral_adapter import MistralAdapter  # noqa: F401
+from .backbones.gemma_adapter import GemmaAdapter  # noqa: F401
+from .backbones.registry import ModelRegistry  # noqa: F401
 
-This package provides stable import paths used across tests, demos, and
-documentation. Where possible, modules re-export implementations from
-`core/` to avoid duplication.
-"""
+from .memory_entry import MemoryEntry  # noqa: F401
+from .memory_buffer import LayeredMemoryBuffer  # noqa: F401
+from .reconstruction import LayeredStateReconstructor  # noqa: F401
 
-from .memory_entry import MemoryEntry
-from .memory_buffer import LayeredMemoryBuffer
-from .reconstruction import LayeredStateReconstructor
-
-__all__ = [
-    "MemoryEntry",
-    "LayeredMemoryBuffer",
-    "LayeredStateReconstructor",
-]
-
-"""
-Neural Network Models for Contextual Memory Reweaving (CMR).
-
-This module contains only the core neural network models and data models:
-- Base transformer models with CMR capabilities
-- Specialized model variants (e.g., Mistral integration)
-- Relevance scoring neural networks
-- Core data models
-"""
-
-# Core neural network models
-from .base_transformer import CMRTransformer
-from .mistral_integration import MistralCMRModel
-from .relevance_scorer import RelevanceScorer
-
-# Data models
-from .memory_entry import MemoryEntry
+from .base_transformer import CMRTransformer  # noqa: F401
+from .mistral_integration import MistralCMRModel  # noqa: F401
+from .relevance_scorer import RelevanceScorer  # noqa: F401
 
 __all__ = [
-    # Neural network models
-    'CMRTransformer',
-    'MistralCMRModel',
-    'RelevanceScorer',
-
+    # Adapters
+    'BackboneAdapter', 'MistralAdapter', 'GemmaAdapter', 'ModelRegistry',
+    # Core neural network models
+    'CMRTransformer', 'MistralCMRModel', 'RelevanceScorer',
     # Data models
-    'MemoryEntry'
+    'MemoryEntry', 'LayeredMemoryBuffer', 'LayeredStateReconstructor',
 ]

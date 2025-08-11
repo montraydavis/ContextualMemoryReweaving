@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Demo script for Day 8: Integration with Base Model
-Demonstrates the full CMR integration with GPT-OSS 20B base model.
+Demonstrates the full CMR integration with transformer-based LLMs.
 """
 
 import torch
@@ -56,8 +56,8 @@ def demonstrate_memory_capture_and_reconstruction():
     print("🔧 Day 8: CMR Integration with Base Model")
     print("=" * 60)
     
-    # Create GPT-OSS 20B configuration
-    gpt2_config = AutoConfig.from_pretrained("openai-community/gpt2")
+    # Create LLM configuration
+    llm_config = AutoConfig.from_pretrained("google/gemma-3-4b-it")
     
     # Create CMR configuration
     cmr_config = create_cmr_config()
@@ -65,7 +65,7 @@ def demonstrate_memory_capture_and_reconstruction():
     # Initialize the full CMR model
     print("Initializing Full CMR Model...")
     cmr_model = FullCMRModel(
-        base_config=gpt2_config,
+        base_config=llm_config,
         cmr_config=cmr_config,
         device="cpu"  # Use CPU for demo
     )
@@ -76,7 +76,7 @@ def demonstrate_memory_capture_and_reconstruction():
     optimizer = CMRPerformanceOptimizer(cmr_model, optimization_config)
     
     # Create tokenizer for demo
-    tokenizer = AutoTokenizer.from_pretrained('openai-community/gpt2')
+    tokenizer = AutoTokenizer.from_pretrained('google/gemma-3-4b-it')
     tokenizer.pad_token = tokenizer.eos_token
     
     # Demo sequences

@@ -53,11 +53,12 @@ class LayeredMemoryBuffer:
         self.stats = {
             'total_insertions': 0,
             'total_retrievals': 0,
-            'evictions': 0,
+            'total_evictions': 0,
+            'cleanup_operations': 0,
             'cache_hits': 0,
             'cache_misses': 0
         }
-        
+
         # Performance tracking
         self.access_patterns = defaultdict(int)
         self.layer_usage = defaultdict(int)
@@ -320,7 +321,7 @@ class LayeredMemoryBuffer:
         self.relevance_index.remove(entry)
 
         self.entry_count -= 1
-        self.stats['evictions'] += 1
+        self.stats['total_evictions'] += 1
 
     def _cleanup_buffer(self):
         """Perform cleanup operations to free memory."""
@@ -454,6 +455,13 @@ class LayeredMemoryBuffer:
         self.max_total_entries = state.get('max_total_entries', self.max_total_entries)
         self.eviction_strategy = state.get('eviction_strategy', self.eviction_strategy)
         self.cleanup_threshold = state.get('cleanup_threshold', self.cleanup_threshold)
+
+    def get_all_entries(self) -> List[MemoryEntry]:
+        """Get all memory entries across all layers."""
+        all_entries = []
+        for layer_entries in self.layer_buffers.values():
+            all_entries.extend(layer_entries)
+        return all_entries
 
     def optimize(self):
         """Run memory optimization: evict least relevant and rebuild indices."""

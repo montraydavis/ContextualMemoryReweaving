@@ -14,8 +14,8 @@ def main():
     print("=" * 50)
     
     # Create configuration
-    print("📋 Creating GPT-OSS 20B configuration...")
-    config = AutoConfig.from_pretrained("openai-community/gpt2")
+    print("📋 Creating LLM configuration...")
+    config = AutoConfig.from_pretrained("mistralai/Ministral-8B-Instruct-2410")
     
     memory_config = {
         'target_layers': [2, 4],  # Hook layers 2 and 4
