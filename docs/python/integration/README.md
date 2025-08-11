@@ -92,6 +92,7 @@ The integration module serves as the central coordination layer for the CMR syst
 ## Table of Contents
 
 - [Overview](#overview)
+- [Integration Flow](#integration-flow)
 - [Key Components](#key-components)
 - [Integration Architecture](#integration-architecture)
 - [Configuration](#configuration)

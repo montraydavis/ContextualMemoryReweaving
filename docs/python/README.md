@@ -4,8 +4,6 @@ Welcome to the documentation for the Contextual Memory Reweaving (CMR) Python im
 
 ## Overview
 
-The CMR system is a sophisticated memory-enhanced language model architecture that enables contextual memory reweaving for improved performance on long-context tasks. The system integrates advanced memory management, retrieval strategies, and optimization techniques with transformer-based language models.
-
 ## Table of Contents
 
 - [Overview](#overview)
@@ -21,6 +19,8 @@ The CMR system is a sophisticated memory-enhanced language model architecture th
 - [Contributing](#contributing)
 - [Version Information](#version-information)
 - [License](#license)
+
+The CMR system is a sophisticated memory-enhanced language model architecture that enables contextual memory reweaving for improved performance on long-context tasks. The system integrates advanced memory management, retrieval strategies, and optimization techniques with transformer-based language models.
 
 ## Key Features
 

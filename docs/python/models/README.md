@@ -4,8 +4,6 @@ The models module contains the core neural network models and data structures fo
 
 ## Overview
 
-The models module implements the core neural network architectures and data models that enable contextual memory reweaving. It includes base transformers, specialized model variants, relevance scoring networks, and essential data structures.
-
 ## Table of Contents
 
 - [Overview](#overview)
@@ -22,6 +20,8 @@ The models module implements the core neural network architectures and data mode
 - [Performance Considerations](#performance-considerations)
 - [Best Practices](#best-practices)
 - [CMRTransformer Troubleshooting](#cmrtransformer-troubleshooting)
+
+The models module implements the core neural network architectures and data models that enable contextual memory reweaving. It includes base transformers, specialized model variants, relevance scoring networks, and essential data structures.
 
 ## Class Relationships
 
