@@ -1,0 +1,11 @@
+[tool.pytest.ini_options]
+timeout = 1800000 # Set a global timeout of 300 seconds (5 minutes)
+minversion = "7.0"
+addopts = "-ra -q --disable-warnings"
+#testpaths = [
+#    "tests"
+#]
+#python_files = [
+#    "test_*.py",
+#    "*_test.py"
+#]
