@@ -70,7 +70,8 @@ class FullCMRModel(nn.Module):
         self._initialize_base_model(adapter=adapter, adapter_name=adapter_name, adapter_kwargs=adapter_kwargs)
         # Backwards compatibility for older tests expecting these attributes
         self.base_transformer = getattr(self, 'adapter', None)
-        self.hook_manager = SimpleNamespace(hooks=[], hook_configs={})
+        # Back-compat hook manager structure expected by older tests
+        self.hook_manager = SimpleNamespace(hooks={}, hook_configs={})
         # Legacy-style memory_config mirror for assertions in Day 5 tests
         self.memory_config = {
             'target_layers': self.cmr_config.get('target_layers', list(range(6, 12))),
@@ -92,6 +93,17 @@ class FullCMRModel(nn.Module):
 
         # Move to device
         self.to(device)
+
+    # Expose relevance_threshold as a property for tests/back-compat
+    @property
+    def relevance_threshold(self) -> float:
+        """Get the current relevance threshold."""
+        return float(self.relevance_scorer.relevance_threshold)
+
+    @relevance_threshold.setter
+    def relevance_threshold(self, value: float) -> None:
+        """Set the relevance threshold."""
+        self.update_relevance_threshold(value)
 
     def _validate_memory_config(self, cfg: Any) -> None:
         if not isinstance(cfg, dict):
@@ -143,15 +155,11 @@ class FullCMRModel(nn.Module):
         # Hidden sizes
         self.base_hidden_size = int(getattr(self.adapter, 'hidden_size', 256))
 
-        # Set output hidden size (256 for test compatibility)
-        self.hidden_size = 256
+        # Get output hidden size from config, default to 256 for backward compatibility
+        self.hidden_size = self.cmr_config.get('output_hidden_size', 256)
 
-        # Add projection layer to ensure consistent output size
-        self.output_projection: nn.Module
-        if self.base_hidden_size != self.hidden_size:
-            self.output_projection = nn.Linear(self.base_hidden_size, self.hidden_size)
-        else:
-            self.output_projection = nn.Identity()
+        # Always create projection to ensure consistent output size
+        self.output_projection = nn.Linear(self.base_hidden_size, self.hidden_size)
 
     def _initialize_cmr_components(self):
         """Initialize CMR-specific components."""
@@ -231,10 +239,16 @@ class FullCMRModel(nn.Module):
         # Register hooks on target layers
         for layer_idx in self.target_layers:
             if layer_idx < len(layers):
-                hook = layers[layer_idx].register_forward_hook(
+                layer = layers[layer_idx]
+                hook = layer.register_forward_hook(
                     self._create_memory_hook(layer_idx)
                 )
                 self.hooks.append(hook)
+                # Back-compat: map layer id to hook object
+                try:
+                    self.hook_manager.hooks[id(layer)] = hook
+                except Exception:
+                    pass
 
     def _create_memory_hook(self, layer_idx: int):
         """Create a memory capture hook for a specific layer."""
@@ -252,6 +266,13 @@ class FullCMRModel(nn.Module):
             self._capture_memory_states(hidden_states, layer_idx)
 
         return hook_fn
+
+    # Back-compat method expected in Day 8 tests
+    def _get_transformer_layers(self) -> List[nn.Module]:
+        try:
+            return self.adapter.get_layers()
+        except Exception:
+            return []
 
     def _capture_memory_states(self, hidden_states: torch.Tensor, layer_idx: int):
         """Capture memory states from a layer."""
@@ -491,15 +512,40 @@ class FullCMRModel(nn.Module):
         return enhanced_states
 
     def _get_memory_stats(self) -> Dict[str, Any]:
-        """Get current memory statistics."""
+        """Get current memory statistics with performance and config details."""
         buffer_stats = self.memory_buffer.get_buffer_stats()
+        perf_stats = self._get_performance_stats()
+
+        # Simple efficiency metrics
+        total_entries = int(buffer_stats.get('total_entries', 0))
+        total_forward = int(perf_stats.get('total_forward_passes', 0))
+        capture_rate = float(total_entries) / float(total_forward) if total_forward > 0 else 0.0
+
+        memory_efficiency = {
+            'buffer_utilization': float(buffer_stats.get('memory_utilization', 0.0)),
+            'capture_rate': float(capture_rate),
+        }
+
+        configuration = {
+            'target_layers': list(self.memory_config.get('target_layers', [])),
+            'scoring_method': str(self.memory_config.get('scoring_method', 'hybrid')),
+            'relevance_threshold': float(self.memory_config.get('relevance_threshold', 0.3)),
+        }
 
         return {
             'buffer_stats': buffer_stats,
             'memory_utilization': buffer_stats.get('memory_utilization', 0.0),
-            'total_entries': buffer_stats.get('total_entries', 0),
-            'retrieval_quality': self._compute_retrieval_quality()
+            'total_entries': total_entries,
+            'retrieval_quality': self._compute_retrieval_quality(),
+            'performance_stats': perf_stats,
+            'memory_efficiency': memory_efficiency,
+            'configuration': configuration,
         }
+
+    # Public method expected by tests
+    def get_memory_stats(self) -> Dict[str, Any]:
+        """Get current memory statistics (public interface)."""
+        return self._get_memory_stats()
 
     def _get_performance_stats(self) -> Dict[str, Any]:
         """Get current performance statistics."""
@@ -580,7 +626,7 @@ class FullCMRModel(nn.Module):
         except Exception as e:
             raise ValueError("relevance_threshold must be a float between 0 and 1") from e
         if not (0.0 <= value <= 1.0):
-            raise ValueError("relevance_threshold must be between 0 and 1")
+            raise ValueError("Threshold must be between 0 and 1")
         self.relevance_scorer.relevance_threshold = value
         self.memory_config['relevance_threshold'] = value
 

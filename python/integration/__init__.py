@@ -1,19 +1,25 @@
 """
 Integration components for Contextual Memory Reweaving (CMR).
 
-This module contains system orchestration and integration functionality:
-- Integrated CMR models that orchestrate all components
-- Full system integration with all features
-- Reconstruction integration and coordination
+This module provides system orchestration and integration functionality for the
+Contextual Memory Reweaving system. It coordinates various components including:
+- Base language models
+- Memory management
+- State reconstruction
+- Output generation
+
+Example usage:
+    # Import the integration module
+    from contextual_memory_reweaving.integration import __version__
+    print(f"Using CMR Integration v{__version__}")
 """
 
-# Main integration models (to be moved)
+from __future__ import annotations
+
+# Version of the integration module
+__version__ = "0.1.0"  # Follows semantic versioning
+
+# TODO: Import and expose public API components when implemented
 # from .cmr_integrated import IntegratedCMRModel
 # from .cmr_full_integrated import FullCMRModel
-
-# Integration coordinators (to be moved)
 # from .reconstruction_integrator import ReconstructionIntegrator
-
-__all__ = [
-    # Will be populated as classes are moved
-]
