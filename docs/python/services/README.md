@@ -4,6 +4,22 @@ The services module provides retrieval and processing services for the Contextua
 
 ## Overview
 
+## Table of Contents
+
+- [Overview](#overview)
+- [System Architecture](#system-architecture)
+- [Key Components](#key-components)
+- [Integration Guide](#integration-guide)
+- [Performance Considerations](#performance-considerations)
+- [Service Architecture](#service-architecture)
+- [Configuration](#configuration)
+- [Performance Optimization](#performance-optimization)
+- [Quality Assurance](#quality-assurance)
+- [Integration with CMR System](#integration-with-cmr-system)
+- [Best Practices](#best-practices)
+- [Troubleshooting](#troubleshooting)
+- [Future Enhancements](#future-enhancements)
+
 ```mermaid
 graph TD
     %% Main Flow
@@ -75,22 +91,6 @@ graph TD
 ```
 
 The services module implements high-level services that coordinate memory operations across the CMR system. It provides advanced retrieval strategies, semantic analysis capabilities, and intelligent ranking systems that enhance the quality and efficiency of memory operations.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [System Architecture](#system-architecture)
-- [Key Components](#key-components)
-- [Integration Guide](#integration-guide)
-- [Performance Considerations](#performance-considerations)
-- [Service Architecture](#service-architecture)
-- [Configuration](#configuration)
-- [Performance Optimization](#performance-optimization)
-- [Quality Assurance](#quality-assurance)
-- [Integration with CMR System](#integration-with-cmr-system)
-- [Best Practices](#best-practices)
-- [Troubleshooting](#troubleshooting)
-- [Future Enhancements](#future-enhancements)
 
 ## System Architecture
 

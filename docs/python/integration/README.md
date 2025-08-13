@@ -4,6 +4,18 @@ The integration module provides system orchestration and integration functionali
 
 ## Overview
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Integration Flow](#integration-flow)
+- [Key Components](#key-components)
+- [Integration Architecture](#integration-architecture)
+- [Configuration](#configuration)
+- [Performance Features](#performance-features)
+- [Testing and Validation](#testing-and-validation)
+- [Best Practices](#best-practices)
+- [Troubleshooting](#troubleshooting)
+
 ```mermaid
 graph TD
     %% Main Integration Flow
@@ -88,18 +100,6 @@ graph TD
 ```
 
 The integration module serves as the central coordination layer for the CMR system, bringing together memory management, retrieval, reconstruction, and optimization components into cohesive, production-ready models.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Integration Flow](#integration-flow)
-- [Key Components](#key-components)
-- [Integration Architecture](#integration-architecture)
-- [Configuration](#configuration)
-- [Performance Features](#performance-features)
-- [Testing and Validation](#testing-and-validation)
-- [Best Practices](#best-practices)
-- [Troubleshooting](#troubleshooting)
 
 ### Integration Flow
 

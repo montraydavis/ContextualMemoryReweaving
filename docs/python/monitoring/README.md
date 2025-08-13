@@ -4,6 +4,19 @@ The monitoring module provides comprehensive performance monitoring and metrics 
 
 ## Overview
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Key Components](#key-components)
+- [Metrics Collection](#metrics-collection)
+- [Real-time Monitoring (Planned)](#real-time-monitoring-planned)
+- [Diagnostic Tools](#diagnostic-tools)
+- [Configuration](#configuration)
+- [Integration with CMR System](#integration-with-cmr-system)
+- [Best Practices](#best-practices)
+- [Troubleshooting](#troubleshooting)
+- [Output Formats](#output-formats)
+
 ```mermaid
 graph TD
     %% Main Monitoring Flow
@@ -95,19 +108,6 @@ graph TD
 ```
 
 The monitoring module is designed to provide visibility into the CMR system's performance, health, and behavior. It includes performance tracking, metrics collection, health monitoring, and diagnostic tools to ensure optimal system operation.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Key Components](#key-components)
-- [Metrics Collection](#metrics-collection)
-- [Real-time Monitoring (Planned)](#real-time-monitoring-planned)
-- [Diagnostic Tools](#diagnostic-tools)
-- [Configuration](#configuration)
-- [Integration with CMR System](#integration-with-cmr-system)
-- [Best Practices](#best-practices)
-- [Troubleshooting](#troubleshooting)
-- [Output Formats](#output-formats)
 
 ### Current Implementation
 

@@ -4,6 +4,20 @@ The optimization module provides comprehensive performance optimization capabili
 
 ## Overview
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Optimization Workflow](#optimization-workflow)
+- [Key Optimization Areas](#key-optimization-areas)
+- [Key Components](#key-components)
+- [Optimization Strategies](#optimization-strategies)
+- [Configuration](#configuration)
+- [Performance Metrics](#performance-metrics)
+- [Integration with CMR System](#integration-with-cmr-system)
+- [Best Practices](#best-practices)
+- [Troubleshooting](#troubleshooting)
+- [Advanced Features](#advanced-features)
+
 ```mermaid
 graph TD
     A[Input] --> B[Performance Monitor]
@@ -36,20 +50,6 @@ graph TD
 ```
 
 The optimization module is designed to enhance CMR system performance through intelligent optimization strategies. It includes adaptive threshold management, batch processing optimization, memory prefetching, computation scheduling, and background optimization tasks.
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Optimization Workflow](#optimization-workflow)
-- [Key Optimization Areas](#key-optimization-areas)
-- [Key Components](#key-components)
-- [Optimization Strategies](#optimization-strategies)
-- [Configuration](#configuration)
-- [Performance Metrics](#performance-metrics)
-- [Integration with CMR System](#integration-with-cmr-system)
-- [Best Practices](#best-practices)
-- [Troubleshooting](#troubleshooting)
-- [Advanced Features](#advanced-features)
 
 ## Optimization Workflow
 
