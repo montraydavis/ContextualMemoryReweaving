@@ -13,9 +13,18 @@ class TestHookIntegration:
         # Use a small, locally available model to avoid heavy downloads
         config = AutoConfig.from_pretrained("mistralai/Ministral-8B-Instruct-2410")
         model = AutoModelForCausalLM.from_pretrained("mistralai/Ministral-8B-Instruct-2410", config=config)
-        # Add a helper method to get layers
+        # Add a helper method to get layers across different HF architectures
         def get_layers():
-            return model.transformer.h
+            # GPT2-style: model.transformer.h
+            if hasattr(model, 'transformer') and hasattr(model.transformer, 'h'):
+                return model.transformer.h
+            # Mistral/LLaMA-style: model.model.layers
+            if hasattr(model, 'model') and hasattr(model.model, 'layers'):
+                return model.model.layers
+            # Fallbacks
+            if hasattr(model, 'layers'):
+                return model.layers
+            raise AttributeError("Could not locate transformer layers on the provided model")
         model.get_layers = get_layers
         return model
     
@@ -41,7 +50,10 @@ class TestHookIntegration:
         captured = hook_manager.get_captured_data("test_layer_3")
         assert captured is not None
         assert captured['layer_idx'] == 3
-        assert captured['hidden_state'].shape == (2, 50, 768)
+        hidden = captured['hidden_state']
+        assert hidden.shape[0] == 2
+        assert hidden.shape[1] == 50
+        assert hidden.shape[2] == llm_model.config.hidden_size
         
         hook_manager.remove_hooks()
     
@@ -64,8 +76,10 @@ class TestHookIntegration:
             captured = hook_manager.get_captured_data(hook_id)
             assert captured is not None
             assert captured['layer_idx'] == layer_idx
-            # GPT2 has 768 hidden dimensions
-            assert captured['hidden_state'].shape == (1, 30, 768)
+            hidden = captured['hidden_state']
+            assert hidden.shape[0] == 1
+            assert hidden.shape[1] == 30
+            assert hidden.shape[2] == llm_model.config.hidden_size
         
         hook_manager.remove_hooks()
     
@@ -158,7 +172,10 @@ class TestHookIntegration:
         captured = hook_manager.get_captured_data("custom_hook")
         assert captured is not None
         assert captured['custom_flag'] == True
-        assert captured['hidden_state'].shape == (1, 30, 768)
+        hidden = captured['hidden_state']
+        assert hidden.shape[0] == 1
+        assert hidden.shape[1] == 30
+        assert hidden.shape[2] == llm_model.config.hidden_size
         
         hook_manager.remove_hooks()
     

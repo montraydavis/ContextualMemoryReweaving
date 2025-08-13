@@ -303,16 +303,21 @@ class FullCMRModel(nn.Module):
                     )
                     states_stored_count += 1
 
-        # Update performance stats
-        self.performance_stats['total_captures'] += 1
-        self.performance_stats['total_memory_operations'] += 1
+        # Update performance stats (robust to external resets of the dict)
+        self.performance_stats['total_captures'] = int(self.performance_stats.get('total_captures', 0)) + 1
+        self.performance_stats['total_memory_operations'] = int(self.performance_stats.get('total_memory_operations', 0)) + 1
         capture_elapsed = time.time() - capture_start_time
-        self.performance_stats['memory_capture_time'] += float(capture_elapsed)
+        self.performance_stats['memory_capture_time'] = float(self.performance_stats.get('memory_capture_time', 0.0)) + float(capture_elapsed)
         # Rolling average capture time
-        self.performance_stats['avg_capture_time'] = (
-            (self.performance_stats['avg_capture_time'] * (self.performance_stats['total_captures'] - 1) + capture_elapsed)
-            / self.performance_stats['total_captures']
-        )
+        total_captures = int(self.performance_stats.get('total_captures', 0))
+        prev_avg_capture = float(self.performance_stats.get('avg_capture_time', 0.0))
+        if total_captures > 0:
+            self.performance_stats['avg_capture_time'] = (
+                (prev_avg_capture * (total_captures - 1) + capture_elapsed)
+                / total_captures
+            )
+        else:
+            self.performance_stats['avg_capture_time'] = float(capture_elapsed)
         try:
             self.performance_monitor.record_capture(layer_idx=layer_idx, states_stored=states_stored_count, capture_time=capture_elapsed)
         except Exception:
@@ -412,9 +417,9 @@ class FullCMRModel(nn.Module):
         hidden_states_list = [projected_states.clone() for _ in range(desired_hidden_states)]
         outputs['hidden_states'] = hidden_states_list  # type: ignore[index]
         outputs['attentions'] = []  # type: ignore[index]
-        # Track inference time and forward pass count for legacy tests
-        self.performance_stats['total_forward_passes'] += 1
-        self.performance_stats['total_inference_time'] += float(outputs['forward_time'])
+        # Track inference time and forward pass count for legacy tests (with safe defaults)
+        self.performance_stats['total_forward_passes'] = int(self.performance_stats.get('total_forward_passes', 0)) + 1
+        self.performance_stats['total_inference_time'] = float(self.performance_stats.get('total_inference_time', 0.0)) + float(outputs['forward_time'])
 
         if return_layer_outputs and layer_outputs is None:
             # As a fallback, simulate per-layer outputs
@@ -495,19 +500,22 @@ class FullCMRModel(nn.Module):
 
                 enhanced_states = layer_enhanced
 
-                # Update performance stats
+                # Update performance stats (robust to external resets of the dict)
                 reconstruction_time = time.time() - start_time
-                self.performance_stats['total_reconstructions'] += 1
-                self.performance_stats['total_memory_operations'] += 1
+                self.performance_stats['total_reconstructions'] = int(self.performance_stats.get('total_reconstructions', 0)) + 1
+                self.performance_stats['total_memory_operations'] = int(self.performance_stats.get('total_memory_operations', 0)) + 1
                 try:
                     self.performance_monitor.record_reconstruction(layer_idx=layer_idx, memories_used=0, reconstruction_time=reconstruction_time)
                 except Exception:
                     pass
-                self.performance_stats['avg_reconstruction_time'] = (
-                    (self.performance_stats['avg_reconstruction_time'] *
-                     (self.performance_stats['total_reconstructions'] - 1) +
-                     reconstruction_time) / self.performance_stats['total_reconstructions']
-                )
+                total_recons = int(self.performance_stats.get('total_reconstructions', 0))
+                prev_avg_recon = float(self.performance_stats.get('avg_reconstruction_time', 0.0))
+                if total_recons > 0:
+                    self.performance_stats['avg_reconstruction_time'] = (
+                        (prev_avg_recon * (total_recons - 1) + reconstruction_time) / total_recons
+                    )
+                else:
+                    self.performance_stats['avg_reconstruction_time'] = float(reconstruction_time)
 
         return enhanced_states
 
