@@ -31,23 +31,125 @@ The CMR system is a sophisticated memory-enhanced language model architecture th
 - **Model Agnostic**: Works with various transformer architectures
 - **Extensible Design**: Easy to extend with custom components and strategies
 
+## Memory Reweaving
+
+Memory Reweaving helps a model remember and reuse the right pieces of past context at the right time—without forcing you to repeat yourself. Think of it like a well‑organized notebook for a digital assistant: it notices important details, files them neatly, and brings them back when they matter.
+
+### What it is (in plain terms)
+
+- **Selective memory**: The system keeps short highlights of what mattered in previous interactions instead of every word.
+- **Layered storage**: Recent notes stay close by, important facts move to a more durable shelf, and rare but critical items go into long‑term storage.
+- **Timely recall**: When you ask something new, CMR fetches only the most relevant notes and weaves them into the model’s thinking.
+
+### Why this works
+
+- Long chats and large documents overwhelm a model if we resend everything each time.
+- Most details aren’t needed later—but the few that are can be decisive.
+- CMR captures, scores, and retrieves those decisive details automatically.
+
+### How it works (step by step)
+
+1. Notice: While processing text, the system identifies potentially useful signals (facts, preferences, task steps).
+2. Store: These signals are turned into compact entries and placed into a layered memory.
+3. Score: Each entry is scored for relevance, recency, and usefulness.
+4. Retrieve: For a new request, only top‑scoring, context‑matching entries are pulled back.
+5. Reweave: Retrieved entries are blended with the current input to guide the response.
+6. Maintain: Old or low‑value entries are pruned; important ones can be kept longer.
+
+### Visual: Memory flow at a glance
+
+```mermaid
+flowchart LR
+    U[User Input and New Task] --> C[Capture and Score]
+    C --> MB[Layered Memory]
+    subgraph MB2 [Layered Memory]
+        RBUF[Recent Buffer]
+        WMEM[Working Memory]
+        LTM[Long term Memory]
+    end
+    MB --> MB2
+    Q[Current Query] --> RETR[Retrieve Relevant]
+    MB2 --> RETR
+    RETR --> REWEAVE[Reweave with Current Context]
+    REWEAVE --> OUT[Model Output]
+```
+
+### Visual: The memory layers
+
+```mermaid
+graph TD
+  subgraph Layered Memory
+    A[Recent Buffer]
+    B[Working Memory]
+    C[Long term Memory]
+  end
+  A --> B --> C
+```
+
+### Everyday examples
+
+- Customer support assistant
+
+  - Learns: your device type and subscription plan.
+  - Reuses later: suggests the right troubleshooting steps automatically.
+- Writing copilot
+
+  - Learns: your project name and tone (e.g., “concise, friendly”).
+  - Reuses later: drafts content in the same voice without reminders.
+- Banking helper
+
+  - Learns: your “every other Friday” payday and preferred transfer account.
+  - Reuses later: when you say “schedule my usual transfer this week,” it proposes the right amount and account, asking only for confirmation.
+
+### Advantages
+
+- Personal continuity: Remembers preferences and prior decisions, reducing back‑and‑forth.
+- Less repetition: You don’t need to restate context every time.
+- Focused context: Sends only what’s relevant to the model, not the entire history.
+- Better long‑task reliability: Maintains coherence over multi‑step workflows.
+- Inspectable memory: Entries are structured and can be reviewed or pruned.
+- Privacy controls: Sensitive items can be excluded or kept ephemeral.
+- Model‑agnostic: Works alongside different transformer backbones.
+
+### Controls you can enable
+
+- Relevance thresholds: Only keep or recall entries above a chosen score.
+- Eviction policies: Automatically clean up stale or low‑value entries.
+- Retrieval budgets: Limit how many items can be pulled back per request.
+- Opt‑out flags: Mark specific content as non‑persistent when needed.
+
+### What to expect
+
+- Fewer clarifying questions from the assistant.
+- More consistent tone and intent across sessions.
+- Improved accuracy on tasks that span many steps or documents.
+
 ## Quick Start
 
+Minimal, offline-friendly setup using the lightweight transformer with hooks:
+
 ```python
-from models import CMRTransformer, MemoryEntry
-from models.backbones import ModelRegistry
+from types import SimpleNamespace
+import torch
+from models import CMRTransformer
 
-# Initialize with a base model
-model = ModelRegistry.create("mistralai/Ministral-8B-Instruct-2410")
+# Minimal config: only fields used by CMRTransformer are required
+base_cfg = SimpleNamespace(vocab_size=50257, num_hidden_layers=8)
 
-# Initialize CMR with the base model
-cmr = CMRTransformer(model)
+# Memory configuration
+memory_config = {"target_layers": [2, 4], "buffer_size": 3}
 
-# Enable memory capture
+# Create model and register hooks
+cmr = CMRTransformer(config=base_cfg, memory_config=memory_config)
+cmr.register_memory_hooks()
 cmr.enable_memory()
 
-# Process input with memory
-output = cmr.generate("Your input here")
+# Run a tiny forward pass
+input_ids = torch.randint(0, base_cfg.vocab_size, (1, 16))  # [batch=1, seq=16]
+outputs = cmr(input_ids)
+
+# Inspect memory stats
+print(outputs["memory_stats"])  # {'total_captured_states': ..., 'layers_with_memory': [...]} 
 ```
 
 ## Architecture Overview
@@ -63,32 +165,33 @@ classDiagram
         +disable_memory()
         +forward()
     }
-    
+  
     class LayeredMemoryBuffer {
         +add_entry()
         +retrieve_recent()
         +retrieve_relevant()
     }
-    
+  
     CMRSystem --> LayeredMemoryBuffer
     CMRSystem --> RelevanceScorer
     CMRSystem --> AdvancedMemoryRetriever
     CMRSystem --> LayeredStateReconstructor
-    
+  
     MistralAdapter --|> BackboneAdapter
     GemmaAdapter --|> BackboneAdapter
 ```
 
 ### Core Modules
 
-| Module           | Description                              | Status             |
-| ---------------- | ---------------------------------------- | ------------------ |
-| **Models**       | Core neural networks and data structures | ✅ Active          |
-| **Integration**  | System orchestration and coordination    | ✅ Active          |
+
+| Module           | Description                              | Status            |
+| ------------------ | ------------------------------------------ | ------------------- |
+| **Models**       | Core neural networks and data structures | ✅ Active         |
+| **Integration**  | System orchestration and coordination    | ✅ Active         |
 | **Services**     | Advanced retrieval and processing        | 🔄 In Development |
-| **Monitoring**   | Performance tracking and metrics         | ✅ Active          |
+| **Monitoring**   | Performance tracking and metrics         | ✅ Active         |
 | **Optimization** | Performance enhancement                  | 🔄 In Development |
-| **Utils**        | Infrastructure and helpers               | ✅ Active          |
+| **Utils**        | Infrastructure and helpers               | ✅ Active         |
 
 ## Module Documentation
 
