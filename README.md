@@ -21,6 +21,25 @@ CMR represents a new category of AI memory that goes beyond traditional approach
 
 Memory Reweaving is our breakthrough approach that enables AI systems to remember, recall, and intelligently use past information - similar to how human memory works, but with systematic organization and retrieval capabilities.
 
+```mermaid
+flowchart LR
+A["User Input"] --> B["Tokenize"]
+B --> C["Base Transformer"]
+C --> D["Capture & Score"]
+D --> E["Layered Memory"]
+subgraph F["Layered Memory"]
+  G["Recent Buffer"] --> H["Working Memory"] --> I["Long-term Memory"]
+end
+E --> J["Retrieve Relevant"]
+J --> K["Reweave with Current Context"]
+K --> L["Model Output"]
+
+%% Controls (dashed)
+M["Privacy Controller"] -.-> D
+N["Eviction Policy"] -.-> E
+O["Relevance Threshold"] -.-> D
+```
+
 ### The Core Concept
 
 Traditional AI systems are like having a conversation with someone who has short-term memory loss - they can only remember what happened in the last few minutes. Memory Reweaving changes this by creating a persistent, intelligent memory system that captures important information and brings it back when relevant.
