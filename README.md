@@ -4,7 +4,7 @@
 
 ## 🎯 Project Overview
 
-The Contextual Memory Reweaving (CMR) project introduces a breakthrough approach to language model memory, based on pioneering research by Frederick Dillon, Gregor Halvorsen, Simon Tattershall, Magnus Rowntree, and Gareth Vanderpool. Our goal is to create the next generation of AI memory systems that can remember and recall contextual information across conversations and tasks.
+The Contextual Memory Reweaving (CMR) project introduces a breakthrough approach to language model memory, inspired heavily by pioneering research by Frederick Dillon, Gregor Halvorsen, Simon Tattershall, Magnus Rowntree, and Gareth Vanderpool. Our goal is to create the next generation of AI memory systems that can remember and recall contextual information across conversations and tasks.
 
 **Research Foundation:** *"Contextual Memory Reweaving in Large Language Models Using Layered Latent State Reconstruction"* - [CITE](https://arxiv.org/abs/2502.02046v1)
 
