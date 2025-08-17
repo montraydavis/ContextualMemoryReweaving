@@ -37,6 +37,9 @@ class GemmaAdapter(BackboneAdapter):
         config: Optional[Any] = None,
     ):
         super().__init__()
+
+        print(f"Initializing GemmaAdapter with model_name: {model_name}")
+
         self.model_name = model_name
         self._device = device
 
