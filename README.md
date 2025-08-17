@@ -2,6 +2,10 @@
 
 **[Experimental]** *This project represents cutting-edge research in artificial intelligence memory systems and is currently in active development.*
 
+## Quickstart
+
+The easiest way to get started is via the provided Jupyter notebook [here](./.demo_examples/UsageExample.ipynb)
+
 ## 🎯 Project Overview
 
 The Contextual Memory Reweaving (CMR) project introduces a breakthrough approach to language model memory, inspired heavily by pioneering research by Frederick Dillon, Gregor Halvorsen, Simon Tattershall, Magnus Rowntree, and Gareth Vanderpool. Our goal is to create the next generation of AI memory systems that can remember and recall contextual information across conversations and tasks.
